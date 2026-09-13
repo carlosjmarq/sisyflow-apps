@@ -10,10 +10,21 @@ date: 2026-09-13
 
 La app de escritorio de SisyFlow parte de **TodoDex** (`TEst-Opencode`): un gestor
 de tareas local multi-proyecto con estética pastel "Nintendo OS", 100% offline.
-La fase `/desktop` copia su working tree a `apps/desktop/` y la renombra
-([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
+La fase `/desktop` copió su working tree a `apps/desktop/` y la renombró a
+SisyFlow el 2026-09-13 ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
 
 ## Contenido
+
+### Estado actual (Fase 1)
+
+- Paquete `sisyflow-desktop@0.1.0` dentro del workspace pnpm de la raíz
+  (`pnpm-workspace.yaml`, `.npmrc` con `node-linker=hoisted`).
+- Verificado el 2026-09-13: `pnpm lint`, `npx tsc --noEmit` y `pnpm dev`
+  (Vite + Electron) en verde.
+- Renombre: `appId com.sisyflow.app`, `productName SisyFlow`, títulos de UI.
+- Se conservan a propósito el nombre de base Dexie `TodoDexDB` (la migración
+  Sísifo debe leer esos datos) y la clave `tododex.drawerWidth`; el backup ahora
+  exporta `sisyflow-backup-<fecha>.json`.
 
 ### Arquitectura
 
@@ -40,13 +51,14 @@ Inventario completo y congelado en [[Paridad funcional con TodoDex]]. En resumen
 CRUD de proyectos con color, CRUD de tareas con estado/prioridad/urgencia/
 vencimiento, épicas por proyecto, tags, backup JSON y editor BlockNote por tarea.
 
-### Deuda heredada (a corregir en la copia)
+### Deuda heredada (tratada en la copia)
 
-- `dist-electron/` versionado en el repo origen → no versionar en SisyFlow.
+- `dist-electron/` estaba versionado en el origen → ignorado en SisyFlow por el
+  `.gitignore` raíz; se regenera con Vite y no se versiona.
 - `docs/` del origen desactualizadas (mencionan `@uiw/react-md-editor`, esquema v2)
-  → su contenido útil se migra al vault, no se copia.
+  → no se copiaron; el vault las supersede.
 - Cambios sin commitear en el working tree origen (backup en UI, tags v2):
-  se copia el working tree completo, no el último commit.
+  copiados tal cual (se copió el working tree completo, no el último commit).
 
 ## Relaciones
 

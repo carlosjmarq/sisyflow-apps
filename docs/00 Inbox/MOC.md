@@ -13,8 +13,9 @@ Punto de entrada al vault. Toda nota nueva se enlaza aquí.
 
 ## Estado del proyecto
 
-**Fase 0 — Andamiaje** completada: monorepo, vault y harness de IA declarados.
-El roadmap de fases vive en [[Fases del proyecto]].
+**Fase 1 — Desktop base** completada (2026-09-13): TodoDex copiado a
+`apps/desktop/` y renombrado a SisyFlow, con paridad verificada. Fase 0
+(andamiaje) previa. El roadmap de fases vive en [[Fases del proyecto]].
 
 ## 00 Inbox
 

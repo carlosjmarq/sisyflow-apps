@@ -71,6 +71,7 @@ Pausar/completar oculta tareas incompletas del día a día sin borrar historial.
 | `project_id` | `uuid` | FK → `projects` |
 | `user_id` | `uuid` | FK → `auth.users`, RLS |
 | `name` | `text` | |
+| `color_code` | `text` | nullable (paridad: `Tag.color` opcional) |
 
 ### Vista `daily_epic_logs` (US 3.1)
 

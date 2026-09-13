@@ -2,7 +2,9 @@
 
 App de escritorio de SisyFlow. Parte del monorepo `sisyflow-apps` ([[ADR-002 Monorepo unico]]).
 
-> Estado (Fase 0): carpeta declarada. El código llega en la fase `/desktop` como copia de TodoDex (`TEst-Opencode`) renombrada a SisyFlow ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
+> Estado (Fase 1, 2026-09-13): código copiado desde TodoDex y renombrado a
+> SisyFlow ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]). Paquete
+> `sisyflow-desktop@0.1.0` en el workspace pnpm de la raíz.
 
 ## Stack
 
@@ -12,7 +14,7 @@ App de escritorio de SisyFlow. Parte del monorepo `sisyflow-apps` ([[ADR-002 Mon
 - Datos: Dexie 4 (IndexedDB) solo como origen de la migración; destino Supabase
   ([[ADR-008 Estrategia de datos nube-first]])
 - Router: react-router-dom 7 (HashRouter)
-- pnpm con `node-linker=hoisted` (`.npmrc` en la raíz del paquete)
+- pnpm con `node-linker=hoisted` (`.npmrc` en la raíz del monorepo)
 
 ## Estructura (heredada de TodoDex)
 
@@ -31,18 +33,27 @@ apps/desktop/
 └── electron-builder.json5
 ```
 
-## Renombre a SisyFlow (fase `/desktop`)
+## Renombre a SisyFlow (aplicado en la Fase 1)
 
-- `package.json`: `name` → `sisyflow-desktop`, `description` nueva.
-- `electron-builder.json5`: `appId` → `com.sisyflow.app`, `productName` → `SisyFlow`.
-- `index.html`: `<title>SisyFlow</title>` y ventana principal.
-- NO copiar del origen: `node_modules/`, `dist/`, `dist-electron/`, `release/`,
-  `.git/`, `docs/` (su contenido se migra al vault).
+- `package.json`: `name: sisyflow-desktop`, versión `0.1.0`, descripción nueva.
+- `electron-builder.json5`: `appId com.sisyflow.app`, `productName SisyFlow`.
+- `index.html` y header de la app: título SisyFlow.
+- No se copió del origen: `node_modules/`, `dist/`, `dist-electron/`, `release/`,
+  `.git/`, `docs/`, `AGENTS.md`, `opencode.json`, `.agents/` ni lockfiles.
+- Se conservan a propósito `TodoDexDB` (base Dexie, migración Sísifo) y la clave
+  `tododex.drawerWidth`; el backup exporta `sisyflow-backup-<fecha>.json`.
 
 ## Comandos (dev)
 
+Instalar desde la raíz del monorepo (workspace pnpm):
+
 ```
 pnpm install
+```
+
+Dentro de `apps/desktop/` (o desde la raíz: `pnpm --filter sisyflow-desktop <script>`):
+
+```
 pnpm dev                 # Vite + Electron
 pnpm lint                # ESLint (0 warnings)
 npx tsc --noEmit         # typecheck

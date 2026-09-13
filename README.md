@@ -6,7 +6,10 @@ Monorepo de **SisyFlow**: suite personal de escritorio para empujar la roca todo
 
 ## Estado
 
-**Fase 0 — Andamiaje.** El repo contiene el vault de conocimiento, las carpetas declaradas y el workflow de IA. El código de la app de escritorio y el backend Supabase se migran en las fases siguientes.
+**Fase 1 — Desktop base** completada: la app Electron vive en `apps/desktop/`
+(renombrada a SisyFlow, con paridad funcional de TodoDex verificada). El backend
+Supabase llega en la Fase 2; el workflow de IA y el vault están operativos desde
+la Fase 0.
 
 ## Estructura
 
@@ -46,5 +49,5 @@ Detalle y versiones exactas: `docs/40 Proceso/Setup y herramientas.md`.
 ## Primeros pasos
 
 1. Abrir el repo con OpenCode (el `opencode.json` carga AGENTS.md y las skills del proyecto).
-2. Ejecutar `/setup` para verificar el toolchain.
-3. Continuar con `/desktop` (fase 1) según `docs/40 Proceso/Fases del proyecto.md`.
+2. `pnpm install` en la raíz (workspace) y `pnpm dev` para levantar la app de escritorio.
+3. Continuar con `/backend` (fase 2) según `docs/40 Proceso/Fases del proyecto.md`.

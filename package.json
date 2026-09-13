@@ -1,0 +1,11 @@
+{
+  "name": "sisyflow-apps",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Monorepo de SisyFlow: app de escritorio Electron + backend Supabase + vault Obsidian",
+  "scripts": {
+    "dev": "pnpm --filter sisyflow-desktop dev",
+    "build": "pnpm --filter sisyflow-desktop build",
+    "lint": "pnpm --filter sisyflow-desktop lint"
+  }
+}

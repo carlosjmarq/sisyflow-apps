@@ -39,8 +39,9 @@ reproducible ([[App de escritorio (base TodoDex)]]).
 ### Pendientes
 
 - [ ] Ícono propio de SisyFlow (hoy usa el genérico de Electron).
-- [ ] Renombrar artefacto/configuración al copiar la app (fase `/desktop`).
-- [ ] Definir número de versión inicial (`0.1.0`).
+- [x] Renombre aplicado: `appId com.sisyflow.app`, `productName SisyFlow`,
+      artefacto `SisyFlow-Windows-<versión>-Setup.exe` (Fase 1, 2026-09-13).
+- [x] Versión inicial definida: `0.1.0` (salida en `release/0.1.0`).
 
 ## Relaciones
 
