@@ -114,6 +114,9 @@ Todas las tablas: `user_id = auth.uid()` en `select`, `insert`, `update`, `delet
 - Tests de RLS con dos usuarios: `backend/supabase/tests/rls_test.sql`
   (22 aserciones pgTAP, `supabase test db` en verde).
 - Tipos TypeScript generados en `apps/desktop/src/types/supabase.ts`.
+- Fase 4: la FK `projects.epic_id` pasa a `on delete restrict`
+  ([[ADR-010 Ciclo de vida de proyectos y vista del dia]]): borrar una épica con
+  proyectos queda bloqueado para proteger el historial.
 
 ## Pendientes
 

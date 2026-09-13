@@ -1,5 +1,5 @@
 import { Routes, Route, useNavigate } from 'react-router-dom'
-import { Plus, FolderOpen, ArrowUpDown, Download, Upload, Settings as SettingsIcon, LogOut, Mountain } from 'lucide-react'
+import { Plus, FolderOpen, ArrowUpDown, Download, Upload, Settings as SettingsIcon, LogOut, Mountain, LayoutGrid, CalendarDays } from 'lucide-react'
 import { useProjects } from './hooks/useProjects'
 import { useAuth } from './auth/AuthContext'
 import { AuthScreen } from './auth/AuthScreen'
@@ -7,12 +7,16 @@ import { ProjectCard } from './components/ProjectCard'
 import { ProjectForm } from './components/ProjectForm'
 import { TodoList } from './components/TodoList'
 import { Settings } from './components/Settings'
+import { Epics } from './components/Epics'
+import { DayView } from './components/DayView'
 import { Button, Select, ConfirmDialog, Dialog, DialogContent, DialogTitle, DialogDescription } from './components/ui'
 import { useToast } from './components/ui/ToastContext'
 import { useState, useMemo, useRef } from 'react'
-import type { ProjectSortKey } from './types'
-import { PROJECT_SORT_OPTIONS } from './types'
+import type { Project, ProjectSortKey } from './types'
+import { PROJECT_SORT_OPTIONS, DEFAULT_HEX } from './types'
 import { exportBackup, importBackup } from './db/backup'
+
+type HomeView = 'projects' | 'day'
 
 function Home() {
   const navigate = useNavigate()
@@ -20,6 +24,7 @@ function Home() {
   const { showToast } = useToast()
   const [formOpen, setFormOpen] = useState(false)
   const [sortBy, setSortBy] = useState<ProjectSortKey>('createdAt')
+  const [view, setView] = useState<HomeView>('projects')
   const { projects, loading, createProject, deleteProject, updateProject } = useProjects()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -59,6 +64,16 @@ function Home() {
     })
   }, [projects, sortBy])
 
+  const projectGroups = useMemo(() => {
+    const groups = new Map<string, { epic?: Project['epic']; projects: Project[] }>()
+    for (const project of sortedProjects) {
+      const group = groups.get(project.epicId) ?? { epic: project.epic, projects: [] }
+      group.projects.push(project)
+      groups.set(project.epicId, group)
+    }
+    return [...groups.values()].sort((a, b) => (a.epic?.name ?? '').localeCompare(b.epic?.name ?? ''))
+  }, [sortedProjects])
+
   return (
     <div className="h-full flex flex-col">
       <header className="px-8 py-6 flex items-center justify-between">
@@ -67,6 +82,13 @@ function Home() {
           <p className="text-sm text-nintendo-muted mt-0.5">Tareas, proyectos y rachas diarias</p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/epics')}
+            title="Épicas"
+            className="p-2.5 rounded-2xl bg-white border border-nintendo-border/60 text-nintendo-muted hover:text-nintendo-text hover:border-mint-dark/70 shadow-soft hover:shadow-soft-md transition-all duration-200"
+          >
+            <Mountain className="w-4 h-4" />
+          </button>
           <button
             onClick={() => navigate('/settings')}
             title="Configuración"
@@ -110,16 +132,34 @@ function Home() {
       </header>
 
       <div className="px-8 pb-3 flex items-center gap-2">
-        <Select
-          icon={<ArrowUpDown className="w-3.5 h-3.5" />}
-          options={PROJECT_SORT_OPTIONS}
-          value={sortBy}
-          onChange={(v) => setSortBy(v as ProjectSortKey)}
-        />
+        <div className="flex bg-nintendo-bg rounded-2xl p-1">
+          {([['projects', 'Proyectos', LayoutGrid], ['day', 'Tareas del día', CalendarDays]] as const).map(([value, label, Icon]) => (
+            <button
+              key={value}
+              onClick={() => setView(value)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                view === value ? 'bg-white shadow-soft text-nintendo-text' : 'text-nintendo-muted hover:text-nintendo-text'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+        {view === 'projects' && (
+          <Select
+            icon={<ArrowUpDown className="w-3.5 h-3.5" />}
+            options={PROJECT_SORT_OPTIONS}
+            value={sortBy}
+            onChange={(v) => setSortBy(v as ProjectSortKey)}
+          />
+        )}
       </div>
 
       <div className="flex-1 overflow-auto px-8 pb-8">
-        {loading ? (
+        {view === 'day' ? (
+          <DayView />
+        ) : loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center gap-4">
               <div className="w-16 h-16 rounded-3xl bg-lavender/40 animate-pulse" />
@@ -138,14 +178,32 @@ function Home() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {sortedProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onDelete={deleteProject}
-                onUpdate={updateProject}
-              />
+          <div className="flex flex-col gap-8">
+            {projectGroups.map((group) => (
+              <div key={group.epic?.id ?? 'sin-epica'} className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: group.epic?.colorCode ?? DEFAULT_HEX }}
+                  />
+                  <span className="text-sm font-bold text-nintendo-text">
+                    {group.epic?.name ?? 'Sin épica'}
+                  </span>
+                  <span className="text-[10px] text-nintendo-muted bg-nintendo-bg px-1.5 py-0.5 rounded-full">
+                    {group.projects.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {group.projects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      onDelete={deleteProject}
+                      onUpdate={updateProject}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -206,6 +264,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/project/:projectId" element={<TodoList />} />
+        <Route path="/epics" element={<Epics />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </div>

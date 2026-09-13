@@ -43,12 +43,16 @@ Reglas duras:
 - El contenido del editor se guarda con **debounce de 800 ms** en `TodoDrawer`
   (BlockNote emite en cada tecla); se fuerza el guardado al cambiar de tarea,
   cerrar el drawer o desmontar.
+- `useDayTodos()` alimenta la vista "Tareas del día": pendientes de proyectos
+  activos (los pausados/completados quedan fuera, ADR-010).
 
 ## Esquema Supabase (Fase 2)
 
 - `epics(id, user_id, name, color_code, created_at)` — sin estado de completado.
 - `projects(id, epic_id, user_id, name, color_code, status, created_at)` —
-  `epic_id` obligatorio; `status`: `active | paused | completed`.
+  `epic_id` obligatorio; `status`: `active | paused | completed`. La FK de
+  `epic_id` es `on delete restrict`: no se puede borrar una épica con proyectos
+  ([[ADR-010 Ciclo de vida de proyectos y vista del dia]]).
 - `todos(id, project_id, user_id, title, status, priority, urgency,
   expiration_date, content jsonb, content_format, completed_at, created_at,
   updated_at)` — `completed_at` lo asigna un trigger al pasar a `done` y lo

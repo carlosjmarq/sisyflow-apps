@@ -13,9 +13,10 @@ Punto de entrada al vault. Toda nota nueva se enlaza aquí.
 
 ## Estado del proyecto
 
-**Fase 3 — Nube** completada (2026-09-13): auth con sesión persistente, capa de
-datos Supabase con UI optimista, migración Sísifo desde IndexedDB y backup v3.
-Fases 0–2 previas. El roadmap de fases vive en [[Fases del proyecto]].
+**Fase 4 — Jerarquía** completada (2026-09-13): CRUD de épicas con color,
+estados de proyecto, Home agrupado por épica con vista "Tareas del día", borrado
+de épicas protegido y `completed_at` visible. Fases 0–3 previas. El roadmap de
+fases vive en [[Fases del proyecto]].
 
 ## 00 Inbox
 
@@ -33,6 +34,7 @@ Fases 0–2 previas. El roadmap de fases vive en [[Fases del proyecto]].
 - [[ADR-007 Jerarquia Epicas Proyectos Tareas]] — Propuesto
 - [[ADR-008 Estrategia de datos nube-first]]
 - [[ADR-009 Migracion Sísifo mapeo y marcador]]
+- [[ADR-010 Ciclo de vida de proyectos y vista del dia]]
 
 ## 20 Tecnico
 

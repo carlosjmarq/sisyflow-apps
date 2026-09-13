@@ -24,6 +24,8 @@ email/contraseña + RLS, consumido directo desde la app Electron con
 - RLS verificada con tests pgTAP (`backend/supabase/tests/rls_test.sql`,
   22 aserciones) — `supabase test db` en verde.
 - Tipos TypeScript generados en `apps/desktop/src/types/supabase.ts`.
+- Fase 4: segunda migración (`epic_delete_restrict`) para bloquear el borrado de
+  épicas con proyectos; tests pgTAP de jerarquía (27 en total, `supabase test db`).
 - Stack local en puertos 453xx por restricciones de Windows
   ([[Supabase local y remoto]]).
 

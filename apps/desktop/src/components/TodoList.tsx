@@ -108,6 +108,13 @@ export function TodoList() {
         </Button>
       </header>
 
+      {project && project.status !== 'active' && (
+        <div className="mx-8 mt-2 rounded-2xl bg-butter/40 border border-butter-dark/40 px-4 py-3 text-xs text-nintendo-text">
+          Proyecto {project.status === 'paused' ? 'pausado' : 'completado'}: sus tareas pendientes no
+          aparecen en "Tareas del día". El historial se conserva.
+        </div>
+      )}
+
       <div className="px-8 py-3 flex items-center gap-2 flex-wrap border-b border-nintendo-border/40">
         <Select
           icon={<ArrowUpDown className="w-3.5 h-3.5" />}

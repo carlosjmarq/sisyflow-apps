@@ -305,7 +305,7 @@ export function useEpics() {
     if (error) {
       console.error(error)
       setEpics(previous)
-      showToast('No se pudo eliminar la épica (¿tiene proyectos?)')
+      showToast('No se puede eliminar la épica: tiene proyectos asignados')
     }
   }, [epics, showToast])
 

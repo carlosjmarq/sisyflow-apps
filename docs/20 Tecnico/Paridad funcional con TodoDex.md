@@ -83,7 +83,20 @@ en cada fase.
       verdes; 16 comprobaciones de integración (auth, RLS, trigger, upsert);
       verificación E2E de UI completa (login, CRUD, editor, migración, RLS);
       backup v3 y migración Sísifo implementados.
-- [ ] Re-verificar en `/hierarchy` y `/gamification`.
+- [x] Regresión de la Fase 4 (`/hierarchy`, 2026-09-13): 27 tests pgTAP,
+      lint/typecheck/build verdes y E2E completo (CRUD de épicas, estados de
+      proyecto, agrupación por épica, Tareas del día, bloqueo de borrado).
+- [ ] Re-verificar en `/gamification`.
+
+### Hallazgos de la Fase 4
+
+- Home agrupa las tarjetas por épica y agrega el toggle "Tareas del día" con las
+  tareas pendientes de proyectos activos (los pausados/completados no aportan).
+- El estado del proyecto se edita en el formulario (Activo/Pausado/Completado) y
+  se muestra como badge; los proyectos inactivos se atenúan.
+- El borrado de épicas con proyectos está bloqueado (FK `on delete restrict`,
+  [[ADR-010 Ciclo de vida de proyectos y vista del dia]]).
+- `completed_at` es visible en el drawer ("Completado el …").
 
 ### Hallazgos de la Fase 3
 

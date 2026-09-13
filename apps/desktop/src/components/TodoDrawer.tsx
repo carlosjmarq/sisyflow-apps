@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import type { Todo, TodoStatus, Priority, Urgency } from '../types'
 import { STATUS_LABELS, PRIORITY_LABELS, URGENCY_LABELS } from '../types'
-import { X, Trash2, Calendar, Clock, Pencil } from 'lucide-react'
+import { X, Trash2, Calendar, Clock, Check, Pencil } from 'lucide-react'
 import { BlockEditor } from './BlockEditor'
 import { ConfirmDialog, Tooltip } from './ui'
 
@@ -264,6 +264,15 @@ export function TodoDrawer({ open, onOpenChange, todo, projectEpic, onUpdate, on
                 {formatDate(todo.createdAt)}
               </span>
             </Field>
+
+            {todo.completedAt && (
+              <Field label="Completado">
+                <span className="text-xs text-mint-dark flex items-center gap-1">
+                  <Check className="w-3 h-3" />
+                  {formatDate(todo.completedAt)}
+                </span>
+              </Field>
+            )}
 
             <Field label="Expira">
               <div className="flex items-center gap-1">

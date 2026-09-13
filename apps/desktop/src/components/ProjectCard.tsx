@@ -1,9 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Folder, Trash2, Edit3, CheckSquare } from 'lucide-react'
-import { Card, Button, ConfirmDialog, Dialog, DialogContent, DialogTitle, Input, Tooltip } from './ui'
-import { PROJECT_COLORS, type Project } from '../types'
+import { Card, Button, ConfirmDialog, Dialog, DialogContent, DialogTitle, Input, Select, Tooltip } from './ui'
+import { PROJECT_COLORS, PROJECT_STATUS_LABELS, type Project, type ProjectStatus } from '../types'
 import type { ProjectUpdatableFields } from '../data/mappers'
+
+const STATUS_BADGES: Record<ProjectStatus, string> = {
+  active: 'bg-mint/60 text-nintendo-text',
+  paused: 'bg-butter/70 text-nintendo-text',
+  completed: 'bg-nintendo-muted/20 text-nintendo-muted',
+}
 
 export function ProjectCard({ project, onDelete, onUpdate }: {
   project: Project
@@ -17,13 +23,14 @@ export function ProjectCard({ project, onDelete, onUpdate }: {
   const bgColor = project.color || PROJECT_COLORS[0].bg
   const todoCount = project.todoCount ?? 0
   const doneCount = project.doneCount ?? 0
+  const isInactive = project.status !== 'active'
 
   return (
     <>
       <Card
         hoverable
         color={bgColor}
-        className="p-6 flex flex-col gap-4 min-h-[180px] relative group"
+        className={`p-6 flex flex-col gap-4 min-h-[180px] relative group ${isInactive ? 'opacity-70' : ''}`}
         onClick={() => navigate(`/project/${project.id}`)}
       >
         <div className="flex items-start justify-between">
@@ -46,19 +53,24 @@ export function ProjectCard({ project, onDelete, onUpdate }: {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col gap-1">
+        <div className="flex-1 flex flex-col gap-1.5">
           <Tooltip content={project.name}>
             <h3 className="font-bold text-lg text-nintendo-text truncate">{project.name}</h3>
           </Tooltip>
-          {project.epic && (
-            <span className="flex items-center gap-1.5 text-[10px] text-nintendo-text/60 self-start bg-white/40 px-2 py-0.5 rounded-full">
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: project.epic.colorCode }}
-              />
-              {project.epic.name}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {project.epic && (
+              <span className="flex items-center gap-1.5 text-[10px] text-nintendo-text/60 bg-white/40 px-2 py-0.5 rounded-full">
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: project.epic.colorCode }}
+                />
+                {project.epic.name}
+              </span>
+            )}
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_BADGES[project.status]}`}>
+              {PROJECT_STATUS_LABELS[project.status]}
             </span>
-          )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2 text-sm text-nintendo-text/60">
@@ -73,8 +85,9 @@ export function ProjectCard({ project, onDelete, onUpdate }: {
           <EditProjectForm
             initialName={project.name}
             initialColor={project.color}
-            onSave={(name, color) => {
-              onUpdate(project.id, { name, color })
+            initialStatus={project.status}
+            onSave={(name, color, status) => {
+              onUpdate(project.id, { name, color, status })
               setEditOpen(false)
             }}
             onCancel={() => setEditOpen(false)}
@@ -93,18 +106,26 @@ export function ProjectCard({ project, onDelete, onUpdate }: {
   )
 }
 
-function EditProjectForm({ initialName, initialColor, onSave, onCancel }: {
+function EditProjectForm({ initialName, initialColor, initialStatus, onSave, onCancel }: {
   initialName: string
   initialColor: string
-  onSave: (name: string, color: string) => void
+  initialStatus: ProjectStatus
+  onSave: (name: string, color: string, status: ProjectStatus) => void
   onCancel: () => void
 }) {
   const [name, setName] = useState(initialName)
   const [color, setColor] = useState(initialColor)
+  const [status, setStatus] = useState<ProjectStatus>(initialStatus)
 
   return (
     <div className="flex flex-col gap-4 mt-4">
       <Input label="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
+      <Select
+        label="Estado"
+        options={Object.entries(PROJECT_STATUS_LABELS).map(([value, label]) => ({ value, label }))}
+        value={status}
+        onChange={(value) => setStatus(value as ProjectStatus)}
+      />
       <div className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold text-nintendo-muted">Color</span>
         <div className="flex gap-2">
@@ -122,7 +143,7 @@ function EditProjectForm({ initialName, initialColor, onSave, onCancel }: {
       </div>
       <div className="flex gap-3 justify-end mt-2">
         <Button variant="secondary" onClick={onCancel}>Cancelar</Button>
-        <Button variant="primary" onClick={() => name.trim() && onSave(name.trim(), color)}>
+        <Button variant="primary" onClick={() => name.trim() && onSave(name.trim(), color, status)}>
           Guardar
         </Button>
       </div>

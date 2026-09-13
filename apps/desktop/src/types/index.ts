@@ -7,6 +7,12 @@ export interface Epic {
 
 export type ProjectStatus = 'active' | 'paused' | 'completed'
 
+export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
+  active: 'Activo',
+  paused: 'Pausado',
+  completed: 'Completado',
+}
+
 export interface Project {
   id: string
   epicId: string

@@ -29,6 +29,10 @@ SisyFlow el 2026-09-13 ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
 - Se conservan a propósito el nombre de base Dexie `TodoDexDB` (la migración
   Sísifo debe leer esos datos) y la clave `tododex.drawerWidth`; el backup ahora
   exporta `sisyflow-backup-<fecha>.json`.
+- **Fase 4**: pantalla Épicas (`/epics`) con CRUD y color, estados de proyecto
+  (activo/pausado/completado), Home agrupado por épica con vista "Tareas del
+  día" y `completed_at` visible en el drawer
+  ([[ADR-010 Ciclo de vida de proyectos y vista del dia]]).
 
 ### Arquitectura
 

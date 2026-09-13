@@ -1,6 +1,6 @@
 ---
 tags: [adr, decision, datos, jerarquia]
-status: Propuesto
+status: Aceptado
 date: 2026-09-13
 ---
 
@@ -72,6 +72,6 @@ editor ([[Paridad funcional con TodoDex]]).
 ## Relaciones
 
 - **MOC:** [[00 Inbox/MOC]]
-- **Relacionada con:** [[ADR-004 Base de escritorio TodoDex a SisyFlow]], [[ADR-008 Estrategia de datos nube-first]], [[US's for personal development project]]
+- **Relacionada con:** [[ADR-004 Base de escritorio TodoDex a SisyFlow]], [[ADR-008 Estrategia de datos nube-first]], [[ADR-010 Ciclo de vida de proyectos y vista del dia]], [[US's for personal development project]]
 - **Afecta a:** [[Modelo de datos objetivo (Supabase)]], [[Paridad funcional con TodoDex]], [[Gamificacion]]
 - **Repo:** `backend/supabase/migrations/`, `apps/desktop/src/`
