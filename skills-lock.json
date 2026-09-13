@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "electron-dev": {
+      "source": "pedronauck/skills",
+      "sourceType": "github",
+      "skillPath": "skills/community/electron-dev/SKILL.md",
+      "computedHash": "9389d1cc3aa88d8e6c58fd4ef75660bc772bf91ad27f163f0134be59e0509d49"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "106acf230014cbb43ca34e6410371321b56ca742f9ee0442e8ec05bf02eb0384"
+    },
+    "obsidian": {
+      "source": "synapsync/skills-registry",
+      "sourceType": "github",
+      "skillPath": "cognitives/skills/integrations/obsidian/SKILL.md",
+      "computedHash": "08e0446ea8d22884f0cd2f411f1e91f51b0a3b293faedb52a35b3537eb5f555f"
+    },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase/SKILL.md",
+      "computedHash": "a6260582f48df8ba53380bb9b9e870ed2ae5fe147799e90ed783b8aa25167d50"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
+      "computedHash": "128fac78002d916c8ca908245d398e634f540d8bcf20915b2b2359aeb18eba59"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "6b526d013e28073246a36f99b529bc43745d30832ecfa8217b359c34f260ca6b"
+    }
+  }
+}

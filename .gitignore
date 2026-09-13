@@ -1,0 +1,42 @@
+# Dependencias
+node_modules/
+
+# Builds y artefactos
+dist/
+dist-electron/
+dist-ssr/
+release/
+out/
+*.blockmap
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+supabase/.env
+supabase/.env.*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editores y sistema
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.claude/
+.DS_Store
+Thumbs.db
+*.local
+
+
+#IA
+opencode.json
