@@ -21,7 +21,7 @@ verificación verde. Cada fase tiene su comando de OpenCode.
 | 2 — Backend | `/backend` | `supabase init`, esquema objetivo, RLS, auth base | 1.1 | ✅ 2026-09-13 |
 | 3 — Nube | `/cloud` | Cliente Supabase, login/registro, migración Sísifo, UI optimista | 1.1–1.3 | ✅ 2026-09-13 |
 | 4 — Jerarquía | `/hierarchy` | Épicas > Proyectos > Tareas, colores, `completed_at`; resolver ADR-007 | 2.1–2.3 | ✅ 2026-09-13 |
-| 5 — Gamificación | `/gamification` | `daily_epic_logs`, heatmap, rachas, weekend freeze | 3.1–3.4 | ⏳ pendiente |
+| 5 — Gamificación | `/gamification` | `daily_epic_logs`, heatmap, rachas, weekend freeze | 3.1–3.4 | ✅ 2026-09-13 |
 | 6 — Entrega | `/deliver` | Builds, READMEs, checklist final | — | ⏳ pendiente |
 
 ### Cierre de fase (checklist)

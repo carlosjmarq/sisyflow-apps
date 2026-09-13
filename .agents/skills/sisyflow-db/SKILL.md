@@ -59,6 +59,8 @@ Reglas duras:
   limpia al salir; `status`: `backlog | todo | in-progress | done | cancelled`.
 - `tags(id, project_id, user_id, name, color_code)`.
 - Vista `daily_epic_logs(day, epic_id, completed_count)` con `security_invoker`.
+- RPCs de gamificación: `daily_epic_logs_tz(p_tz, p_days)` y
+  `epic_streaks(p_tz, p_today)` (security invoker; execute solo `authenticated`).
 - RLS `auth.uid() = user_id` en todas las tablas; el rol `anon` no accede.
 
 Tipos generados: `src/types/supabase.ts`. Tras cada migración:

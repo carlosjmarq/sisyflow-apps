@@ -1,6 +1,6 @@
 ---
 tags: [tecnico, gamificacion, streak, heatmap]
-status: borrador
+status: permanente
 date: 2026-09-13
 ---
 
@@ -21,6 +21,9 @@ backlog ([[US's for personal development project]]) y depende del modelo
   (`completed_at` no nulo), uniendo `todos` → `projects`.
 - Salida limpia: `[fecha, epic_id, cantidad_completada]`.
 - Debe ser eficiente: índices en `completed_at` y `project_id`; `security_invoker = true`.
+- La app usa la función `daily_epic_logs_tz(p_tz, p_days)` para cortar el día en
+  la zona horaria del cliente; la vista UTC queda para consumidores SQL
+  ([[ADR-011 Gamificacion zona horaria rachas y heatmap]]).
 
 ### US 3.2 — Heatmap (365 días)
 
@@ -45,12 +48,24 @@ backlog ([[US's for personal development project]]) y depende del modelo
   conserva el valor del viernes.
 - Completar una tarea en fin de semana suma +1 como recompensa.
 
-### Decisiones abiertas (fase `/gamification`)
+### Implementación (Fase 5)
 
-- [ ] Zona horaria para el corte del día (propuesta: hora local del usuario).
-- [ ] Cálculo en cliente vs. en SQL (vista/consulta); impacta rendimiento y tests.
-- [ ] Best streak: ¿se calcula recorriendo el histórico o se persiste?
-- [ ] Formato exacto del heatmap (librería vs. componente propio).
+- Migración `gamification_rpc`: funciones `daily_epic_logs_tz` y `epic_streaks`
+  (`security invoker`, ejecutables solo por `authenticated`).
+- Rachas calculadas en SQL con las reglas de US 3.3/3.4; `p_today` permite tests
+  deterministas con pgTAP (11 aserciones de gamificación, 38 en total).
+- Pantalla **Progreso** (`/progress`): heatmap de 365 días con selector
+  "Vista global" / por épica y tarjetas de racha (🔥 actual + mejor marca),
+  ordenadas por racha actual.
+- Heatmap propio (`Heatmap.tsx`), sin dependencias: 4 niveles de intensidad,
+  color base de la épica, etiquetas de mes y tooltip por día.
+
+### Decisiones tomadas
+
+- [x] Zona horaria para el corte del día: la del cliente, vía RPC (ADR-011).
+- [x] Cálculo en SQL (funciones), no en el cliente; testeable con pgTAP.
+- [x] Best streak: se recalcula en cada consulta (no se persiste).
+- [x] Heatmap: componente propio, sin librería de charts.
 
 ## Relaciones
 

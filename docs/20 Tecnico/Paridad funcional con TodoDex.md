@@ -86,7 +86,19 @@ en cada fase.
 - [x] Regresión de la Fase 4 (`/hierarchy`, 2026-09-13): 27 tests pgTAP,
       lint/typecheck/build verdes y E2E completo (CRUD de épicas, estados de
       proyecto, agrupación por épica, Tareas del día, bloqueo de borrado).
-- [ ] Re-verificar en `/gamification`.
+- [x] Regresión de la Fase 5 (`/gamification`, 2026-09-13): 38 tests pgTAP,
+      lint/typecheck/build verdes y E2E completo (heatmap de 365 días, filtro
+      global/por épica, racha en vivo +1 y reglas de fin de semana cubiertas
+      por tests).
+
+### Hallazgos de la Fase 5
+
+- El corte del día y las rachas se calculan en SQL con la zona horaria del
+  cliente; `daily_epic_logs` (UTC) queda como vista de referencia.
+- Pantalla `/progress` con heatmap propio (sin dependencias) y tarjetas de racha
+  ordenadas por racha actual.
+- Fix heredado: `DialogOverlay` y `DialogContent` ahora usan `forwardRef`; se
+  eliminó el warning de React al abrir diálogos.
 
 ### Hallazgos de la Fase 4
 

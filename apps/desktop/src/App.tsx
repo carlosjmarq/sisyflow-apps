@@ -1,5 +1,5 @@
 import { Routes, Route, useNavigate } from 'react-router-dom'
-import { Plus, FolderOpen, ArrowUpDown, Download, Upload, Settings as SettingsIcon, LogOut, Mountain, LayoutGrid, CalendarDays } from 'lucide-react'
+import { Plus, FolderOpen, ArrowUpDown, Download, Upload, Settings as SettingsIcon, LogOut, Mountain, LayoutGrid, CalendarDays, Flame } from 'lucide-react'
 import { useProjects } from './hooks/useProjects'
 import { useAuth } from './auth/AuthContext'
 import { AuthScreen } from './auth/AuthScreen'
@@ -8,6 +8,7 @@ import { ProjectForm } from './components/ProjectForm'
 import { TodoList } from './components/TodoList'
 import { Settings } from './components/Settings'
 import { Epics } from './components/Epics'
+import { Progress } from './components/Progress'
 import { DayView } from './components/DayView'
 import { Button, Select, ConfirmDialog, Dialog, DialogContent, DialogTitle, DialogDescription } from './components/ui'
 import { useToast } from './components/ui/ToastContext'
@@ -88,6 +89,13 @@ function Home() {
             className="p-2.5 rounded-2xl bg-white border border-nintendo-border/60 text-nintendo-muted hover:text-nintendo-text hover:border-mint-dark/70 shadow-soft hover:shadow-soft-md transition-all duration-200"
           >
             <Mountain className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => navigate('/progress')}
+            title="Progreso"
+            className="p-2.5 rounded-2xl bg-white border border-nintendo-border/60 text-nintendo-muted hover:text-nintendo-text hover:border-butter-dark/70 shadow-soft hover:shadow-soft-md transition-all duration-200"
+          >
+            <Flame className="w-4 h-4" />
           </button>
           <button
             onClick={() => navigate('/settings')}
@@ -265,6 +273,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/project/:projectId" element={<TodoList />} />
         <Route path="/epics" element={<Epics />} />
+        <Route path="/progress" element={<Progress />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </div>

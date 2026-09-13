@@ -26,6 +26,8 @@ email/contraseña + RLS, consumido directo desde la app Electron con
 - Tipos TypeScript generados en `apps/desktop/src/types/supabase.ts`.
 - Fase 4: segunda migración (`epic_delete_restrict`) para bloquear el borrado de
   épicas con proyectos; tests pgTAP de jerarquía (27 en total, `supabase test db`).
+- Fase 5: migración `gamification_rpc` con `daily_epic_logs_tz` y `epic_streaks`;
+  tests pgTAP de gamificación (38 en total).
 - Stack local en puertos 453xx por restricciones de Windows
   ([[Supabase local y remoto]]).
 

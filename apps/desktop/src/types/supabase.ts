@@ -204,7 +204,22 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      daily_epic_logs_tz: {
+        Args: { p_days?: number; p_tz?: string }
+        Returns: {
+          completed_count: number
+          day: string
+          epic_id: string
+        }[]
+      }
+      epic_streaks: {
+        Args: { p_today?: string; p_tz?: string }
+        Returns: {
+          best_streak: number
+          current_streak: number
+          epic_id: string
+        }[]
+      }
     }
     Enums: {
       project_status: "active" | "paused" | "completed"

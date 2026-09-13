@@ -33,6 +33,9 @@ SisyFlow el 2026-09-13 ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
   (activo/pausado/completado), Home agrupado por épica con vista "Tareas del
   día" y `completed_at` visible en el drawer
   ([[ADR-010 Ciclo de vida de proyectos y vista del dia]]).
+- **Fase 5**: pantalla Progreso (`/progress`) con heatmap de 365 días (global o
+  por épica) y rachas 🔥 por épica
+  ([[ADR-011 Gamificacion zona horaria rachas y heatmap]]).
 
 ### Arquitectura
 

@@ -13,10 +13,10 @@ Punto de entrada al vault. Toda nota nueva se enlaza aquí.
 
 ## Estado del proyecto
 
-**Fase 4 — Jerarquía** completada (2026-09-13): CRUD de épicas con color,
-estados de proyecto, Home agrupado por épica con vista "Tareas del día", borrado
-de épicas protegido y `completed_at` visible. Fases 0–3 previas. El roadmap de
-fases vive en [[Fases del proyecto]].
+**Fase 5 — Gamificación** completada (2026-09-13): heatmap de 365 días con filtro
+global/por épica, rachas 🔥 por épica con weekend freeze y cálculo en SQL según
+la zona horaria del cliente. Fases 0–4 previas. El roadmap de fases vive en
+[[Fases del proyecto]].
 
 ## 00 Inbox
 
@@ -35,6 +35,7 @@ fases vive en [[Fases del proyecto]].
 - [[ADR-008 Estrategia de datos nube-first]]
 - [[ADR-009 Migracion Sísifo mapeo y marcador]]
 - [[ADR-010 Ciclo de vida de proyectos y vista del dia]]
+- [[ADR-011 Gamificacion zona horaria rachas y heatmap]]
 
 ## 20 Tecnico
 

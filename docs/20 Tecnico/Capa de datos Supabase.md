@@ -46,6 +46,7 @@ Supabase es la fuente de verdad; Dexie queda solo como origen de la migración.
 | `useProjectTags(projectId)` | tags del proyecto | CRUD (sin UI aún; capacidad de paridad) |
 | `useSearchTodos(query)` | `ilike` sobre título con debounce | — |
 | `useDayTodos()` | tareas pendientes de proyectos activos con proyecto/épica embebidos | — (vista "Tareas del día", ADR-010) |
+| `useGamification(days)` | RPC `daily_epic_logs_tz` + `epic_streaks` con la zona horaria del cliente | — (pantalla Progreso, ADR-011) |
 
 Patrón de mutación:
 

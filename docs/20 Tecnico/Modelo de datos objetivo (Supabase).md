@@ -84,6 +84,14 @@ Pausar/completar oculta tareas incompletas del día a día sin borrar historial.
 - `security_invoker = true` para que respete RLS.
 - Índices de apoyo: `todos(completed_at)`, `todos(project_id)`, `projects(epic_id)`.
 
+### Funciones de gamificación (Fase 5)
+
+- `daily_epic_logs_tz(p_tz text, p_days integer)` — logs diarios con corte en la
+  zona horaria del cliente (fallback UTC).
+- `epic_streaks(p_tz text, p_today date)` — racha actual y mejor marca por épica
+  con weekend freeze; `p_today` existe para tests.
+- Ambas `security invoker`; `execute` solo para `authenticated`.
+
 ### RLS
 
 Todas las tablas: `user_id = auth.uid()` en `select`, `insert`, `update`, `delete`
