@@ -13,9 +13,10 @@ Punto de entrada al vault. Toda nota nueva se enlaza aquí.
 
 ## Estado del proyecto
 
-**Fase 1 — Desktop base** completada (2026-09-13): TodoDex copiado a
-`apps/desktop/` y renombrado a SisyFlow, con paridad verificada. Fase 0
-(andamiaje) previa. El roadmap de fases vive en [[Fases del proyecto]].
+**Fase 2 — Backend** completada (2026-09-13): Supabase local con esquema
+completo (épicas, proyectos, tareas, tags), RLS verificada con 22 tests pgTAP,
+seed de desarrollo y tipos TypeScript generados. Fases 0–1 previas. El roadmap
+de fases vive en [[Fases del proyecto]].
 
 ## 00 Inbox
 

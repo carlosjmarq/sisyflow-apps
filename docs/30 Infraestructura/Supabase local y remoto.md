@@ -17,11 +17,17 @@ la app. Ver [[ADR-005 Supabase como backend]] y [[Backend Supabase]].
 ### Local (desarrollo)
 
 - Requiere Docker Desktop corriendo.
-- `supabase start` levanta el stack: API (54321), Postgres (54322), Studio
-  (54323), Inbucket de correos (54324) — puertos por defecto del CLI.
+- `supabase start` levanta el stack en puertos **453xx** (no los 543xx por
+  defecto): Windows reserva el rango 54226–54325 y Docker no puede exponerlos.
+  API 45321, Postgres 45322, Studio 45323, Mailpit 45324.
+- Analytics deshabilitado (`[analytics] enabled = false`): en Windows requeriría
+  exponer el daemon Docker en `tcp://localhost:2375`.
+- Claves locales: **publishable** (para el cliente) y **secret** (solo
+  administración); `supabase status` las muestra.
 - `supabase db reset` recrea la base local aplicando migraciones + `seed.sql`.
-- Las claves locales (URL + anon key) se copian del `supabase status` al `.env`
-  del desktop (gitignored).
+- Tests de RLS: `supabase test db` (pgTAP; 22 aserciones en verde).
+- Las claves locales se copian del `supabase status` al `.env` del desktop
+  (gitignored).
 
 ### Remoto (uso real)
 
@@ -33,12 +39,12 @@ la app. Ver [[ADR-005 Supabase como backend]] y [[Backend Supabase]].
 
 ### Toolchain
 
-- Supabase CLI verificada: **2.98.2** (existe 2.117.0; decidir actualización en `/setup`).
+- Supabase CLI: **2.117.0** (actualizada el 2026-09-13).
 - Versiones y comandos completos en [[Setup y herramientas]].
 
 ## Pendientes
 
-- [ ] Actualizar Supabase CLI (o justificar quedarse en 2.98.2).
+- [x] Supabase CLI actualizada a 2.117.0 (2026-09-13).
 - [ ] Crear el proyecto remoto al llegar a `/cloud`.
 - [ ] Definir rutina de respaldo (dump programado o export manual).
 

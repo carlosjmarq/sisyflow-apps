@@ -18,7 +18,7 @@ verificación verde. Cada fase tiene su comando de OpenCode.
 | --- | --- | --- | --- | --- |
 | 0 — Andamiaje | — | Monorepo, vault y harness IA | — | ✅ 2026-09-13 |
 | 1 — Desktop base | `/desktop` | Copiar TodoDex → SisyFlow, renombre, paridad verificada | transversal | ✅ 2026-09-13 |
-| 2 — Backend | `/backend` | `supabase init`, esquema objetivo, RLS, auth base | 1.1 | ⏳ pendiente |
+| 2 — Backend | `/backend` | `supabase init`, esquema objetivo, RLS, auth base | 1.1 | ✅ 2026-09-13 |
 | 3 — Nube | `/cloud` | Cliente Supabase, login/registro, migración Sísifo, UI optimista | 1.1–1.3 | ⏳ pendiente |
 | 4 — Jerarquía | `/hierarchy` | Épicas > Proyectos > Tareas, colores, `completed_at`; resolver ADR-007 | 2.1–2.3 | ⏳ pendiente |
 | 5 — Gamificación | `/gamification` | `daily_epic_logs`, heatmap, rachas, weekend freeze | 3.1–3.4 | ⏳ pendiente |

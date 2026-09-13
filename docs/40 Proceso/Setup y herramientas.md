@@ -50,7 +50,9 @@ npx skills --version
 - [x] Actualizar Supabase CLI (2.98.2 → 2.117.0) — hecho el 2026-09-13.
 - [x] Dependencias del desktop instaladas (Fase 1, 2026-09-13): `pnpm install`
       en la raíz del workspace (586 paquetes; Electron descargado).
-- [ ] Iniciar Docker Desktop antes de `/backend` (fase 2).
+- [x] Docker Desktop iniciado y stack local verificado (Fase 2, 2026-09-13).
+      Los puertos de Supabase local se movieron a 453xx por rangos reservados
+      de Windows ([[Supabase local y remoto]]).
 
 ## Relaciones
 

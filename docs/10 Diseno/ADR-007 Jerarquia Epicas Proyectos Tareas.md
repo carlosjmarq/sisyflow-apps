@@ -8,7 +8,8 @@ date: 2026-09-13
 
 ## Status
 
-Propuesto — se resuelve (Aceptado/ajustado) en la fase `/hierarchy`.
+Aceptado — implementado en la Fase 2 (2026-09-13). El mapeo de migración
+proyecto→épica se aplica en la Fase 3 (`/cloud`).
 
 ## Contexto
 
@@ -31,7 +32,7 @@ El guardrail de paridad exige conservar las capacidades actuales de los todos
 (status extendido, prioridad, urgencia, vencimiento, tags, orden/filtros) y del
 editor ([[Paridad funcional con TodoDex]]).
 
-## Decisión propuesta
+## Decisión
 
 1. Adoptar la jerarquía **Épica > Proyecto > Tarea** en el esquema Supabase
    ([[Modelo de datos objetivo (Supabase)]]).

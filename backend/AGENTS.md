@@ -2,7 +2,8 @@
 
 Backend de SisyFlow: Supabase (Postgres + Auth + RLS). Parte del monorepo `sisyflow-apps` ([[ADR-002 Monorepo unico]]).
 
-> Estado (Fase 0): carpeta declarada. El proyecto Supabase se inicializa en la fase `/backend` (`supabase init` dentro de `backend/`).
+> Estado (Fase 2, 2026-09-13): proyecto Supabase inicializado en `backend/supabase/`
+> (migración inicial, seed, RLS con tests pgTAP y tipos generados para el desktop).
 
 ## Stack
 
@@ -13,26 +14,35 @@ Backend de SisyFlow: Supabase (Postgres + Auth + RLS). Parte del monorepo `sisyf
 - Edge Functions solo si un ADR lo justifica
 - Tipos TypeScript generados para `apps/desktop`
 
-## Estructura esperada
+## Estructura
 
 ```
 backend/
 └── supabase/
-    ├── config.toml
-    ├── migrations/      # migraciones SQL inmutables
-    ├── functions/       # edge functions (solo justificadas)
-    └── seed.sql         # datos de desarrollo idempotentes
+    ├── config.toml      # project_id sisyflow; puertos 453xx (restricción de Windows)
+    ├── migrations/      # 20260913191443_initial_schema.sql
+    ├── tests/           # rls_test.sql (pgTAP, 22 aserciones)
+    ├── functions/       # edge functions (vacío; solo con ADR)
+    └── seed.sql         # usuarios de prueba + datos de ejemplo
 ```
 
 ## Comandos (dev)
 
 ```
-supabase start                       # levanta el stack local (Docker)
-supabase status                      # URLs y claves locales
-supabase migration new <nombre>      # crea migración
-supabase db reset                    # recrea DB local + seed
-supabase db push                     # aplica migraciones al remoto
-supabase gen types typescript --local # tipos TS para el desktop
+supabase start                        # stack local (puertos 453xx)
+supabase status                       # URLs y claves locales
+supabase migration new <nombre>       # crea migración
+supabase db reset                     # recrea DB local + seed
+supabase test db                      # tests pgTAP (RLS)
+supabase db advisors --local          # issues de seguridad/performance
+supabase db push                      # aplica migraciones al remoto
+```
+
+Para regenerar tipos (en Windows, el redirect de PowerShell 5.1 escribe UTF-16;
+usar `cmd /c`):
+
+```
+cmd /c "supabase gen types typescript --local > ..\apps\desktop\src\types\supabase.ts"
 ```
 
 ## Esquema
@@ -56,3 +66,6 @@ La vista `daily_epic_logs` alimenta la gamificación (`[[Gamificacion]]`).
 - RLS probada con dos usuarios.
 - Tipos TypeScript regenerados para el desktop.
 - Vault actualizado (nota + MOC).
+
+> Cumplido en la Fase 2 (2026-09-13): reset limpio, 22 tests de RLS en verde,
+> advisors sin issues y tipos regenerados.

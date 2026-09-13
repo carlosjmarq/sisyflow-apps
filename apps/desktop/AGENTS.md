@@ -26,7 +26,7 @@ apps/desktop/
 │   │   └── ui/        # primitivas (Button, Card, Dialog, Select...)
 │   ├── db/            # database.ts (Dexie), backup.ts
 │   ├── hooks/         # useProjects y hooks de datos
-│   └── types/         # interfaces y constantes de dominio
+│   └── types/         # interfaces y constantes; supabase.ts (tipos generados en Fase 2)
 ├── index.html
 ├── vite.config.ts
 ├── tailwind.config.ts

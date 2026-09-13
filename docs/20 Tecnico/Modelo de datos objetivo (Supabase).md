@@ -13,6 +13,10 @@ Esquema relacional destino para SisyFlow: cubre las user stories del backlog
 exigidos por el guardrail de paridad ([[Paridad funcional con TodoDex]]). El SQL
 definitivo se escribe en la fase `/backend`; esta nota es el contrato de diseño.
 
+**Implementado en la Fase 2** con la migración
+`backend/supabase/migrations/20260913191443_initial_schema.sql` (ver
+[[Backend Supabase]]).
+
 ## Contenido
 
 ### Tablas
@@ -97,11 +101,27 @@ Todas las tablas: `user_id = auth.uid()` en `select`, `insert`, `update`, `delet
 | `todos.content` string markdown | `todos.content` jsonb | convertir a bloques en la migración |
 | `tags` | `tags` | 1:1 |
 
+### Implementación (Fase 2)
+
+- Enums: `project_status`, `todo_status` y `task_priority` (compartido por
+  prioridad y urgencia).
+- Trigger `todos_set_timestamps`: asigna `completed_at` al pasar a `done`, lo
+  limpia al salir de `done` y actualiza `updated_at` (US 2.3).
+- RLS: políticas `to authenticated` con `(select auth.uid()) = user_id` por
+  operación; el rol `anon` no tiene acceso a tablas ni a la vista.
+- Vista `daily_epic_logs` con `security_invoker = true`; el corte del día usa
+  UTC por ahora (decisión de zona horaria en `/gamification`).
+- Tests de RLS con dos usuarios: `backend/supabase/tests/rls_test.sql`
+  (22 aserciones pgTAP, `supabase test db` en verde).
+- Tipos TypeScript generados en `apps/desktop/src/types/supabase.ts`.
+
 ## Pendientes
 
-- [ ] Escribir el SQL definitivo (migraciones) en `/backend`.
-- [ ] Resolver la asignación de proyecto→épica para proyectos con varias épicas (ADR-007).
-- [ ] Definir índices exactos según consultas del heatmap y las vistas del día.
+- [x] Escribir el SQL definitivo (migraciones) en `/backend` (2026-09-13).
+- [ ] Resolver la asignación de proyecto→épica para proyectos con varias épicas
+      (ADR-007) durante la migración Sísifo (fase `/cloud`).
+- [ ] Confirmar la zona horaria del corte diario para `daily_epic_logs`
+      (fase `/gamification`).
 
 ## Relaciones
 

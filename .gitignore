@@ -14,9 +14,7 @@ out/
 .env.*
 !.env.example
 
-# Supabase
-supabase/.temp/
-supabase/.branches/
+# Supabase (los temporales del CLI se ignoran via backend/supabase/.gitignore)
 supabase/.env
 supabase/.env.*
 

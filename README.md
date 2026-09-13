@@ -6,10 +6,10 @@ Monorepo de **SisyFlow**: suite personal de escritorio para empujar la roca todo
 
 ## Estado
 
-**Fase 1 — Desktop base** completada: la app Electron vive en `apps/desktop/`
-(renombrada a SisyFlow, con paridad funcional de TodoDex verificada). El backend
-Supabase llega en la Fase 2; el workflow de IA y el vault están operativos desde
-la Fase 0.
+**Fase 2 — Backend** completada: Supabase local con esquema (épicas, proyectos,
+tareas, tags), RLS verificada (22 tests pgTAP), seed de desarrollo y tipos
+TypeScript generados. La app Electron vive en `apps/desktop/` con paridad de
+TodoDex verificada. Siguiente fase: `/cloud` (cliente, login y migración Sísifo).
 
 ## Estructura
 
@@ -50,4 +50,4 @@ Detalle y versiones exactas: `docs/40 Proceso/Setup y herramientas.md`.
 
 1. Abrir el repo con OpenCode (el `opencode.json` carga AGENTS.md y las skills del proyecto).
 2. `pnpm install` en la raíz (workspace) y `pnpm dev` para levantar la app de escritorio.
-3. Continuar con `/backend` (fase 2) según `docs/40 Proceso/Fases del proyecto.md`.
+3. Continuar con `/cloud` (fase 3) según `docs/40 Proceso/Fases del proyecto.md`.

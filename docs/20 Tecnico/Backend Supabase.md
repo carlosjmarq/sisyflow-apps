@@ -10,10 +10,22 @@ date: 2026-09-13
 
 Backend de SisyFlow según [[ADR-005 Supabase como backend]]: Postgres + Auth
 email/contraseña + RLS, consumido directo desde la app Electron con
-`@supabase/supabase-js` (anon key). El proyecto Supabase se inicializa en
-`backend/supabase/` durante la fase `/backend`.
+`@supabase/supabase-js` (publishable key). El proyecto Supabase vive en
+`backend/supabase/` (inicializado en la Fase 2).
 
 ## Contenido
+
+### Estado actual (Fase 2, 2026-09-13)
+
+- Migración inicial aplicada: enums, `epics`, `projects`, `todos`, `tags`,
+  índices, trigger de timestamps, vista `daily_epic_logs` y RLS.
+- Seed de desarrollo con dos usuarios: `ana@example.com` y `beto@example.com`
+  (contraseña `password123`).
+- RLS verificada con tests pgTAP (`backend/supabase/tests/rls_test.sql`,
+  22 aserciones) — `supabase test db` en verde.
+- Tipos TypeScript generados en `apps/desktop/src/types/supabase.ts`.
+- Stack local en puertos 453xx por restricciones de Windows
+  ([[Supabase local y remoto]]).
 
 ### Autenticación (US 1.1)
 
@@ -64,8 +76,8 @@ migración Sísifo (US 1.2).
 
 ## Pendientes
 
-- [ ] `supabase init` y primera migración (fase `/backend`).
-- [ ] Generar tipos y tipo de cliente en el desktop (fase `/cloud`).
+- [x] `supabase init` y primera migración (Fase 2, 2026-09-13).
+- [ ] Integrar el cliente en el desktop con la publishable key (fase `/cloud`).
 - [ ] Definir proyecto remoto de producción.
 
 ## Relaciones
