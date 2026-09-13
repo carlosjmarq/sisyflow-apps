@@ -1,20 +1,11 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogTitle, Input, Button } from './ui'
+import type { NewTodoInput } from '../hooks/useProjects'
 
 export function TodoForm({ open, onOpenChange, onCreate }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreate: (todo: {
-    title: string
-    status: 'todo'
-    priority: 'medium'
-    urgency: 'medium'
-    epic: string
-    content: string
-    contentFormat: 'blocknote'
-    createdAt: Date
-    expirationDate: null
-  }) => void
+  onCreate: (todo: NewTodoInput) => void
 }) {
   const [title, setTitle] = useState('')
 
@@ -25,7 +16,6 @@ export function TodoForm({ open, onOpenChange, onCreate }: {
       status: 'todo',
       priority: 'medium',
       urgency: 'medium',
-      epic: '',
       content: '[]',
       contentFormat: 'blocknote',
       createdAt: new Date(),

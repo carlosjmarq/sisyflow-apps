@@ -79,7 +79,20 @@ en cada fase.
 ### Verificación
 
 - [x] Inventario contrastado contra el código real al copiar (Fase 1, 2026-09-13).
-- [ ] Checklist de regresión ejecutada al cerrar `/cloud`, `/hierarchy` y `/gamification`.
+- [x] Regresión de la Fase 3 (`/cloud`, 2026-09-13): lint, typecheck y build
+      verdes; 16 comprobaciones de integración (auth, RLS, trigger, upsert);
+      backup v3 y migración Sísifo implementados.
+- [ ] Re-verificar en `/hierarchy` y `/gamification`.
+
+### Hallazgos de la Fase 3
+
+- La épica por tarea y su filtro se retiraron: la épica pasa a ser del proyecto
+  ([[ADR-007 Jerarquia Epicas Proyectos Tareas]]). El indicador de épica sigue
+  visible en tarjetas, lista y drawer.
+- El color de proyecto migra de nombre de paleta a hex (`color_code`).
+- El contenido del editor se guarda con debounce de 800 ms para no saturar la
+  red ([[Capa de datos Supabase]]).
+- El backup pasa a versión 3 (UUIDs); el import acepta v2 y v3.
 
 ### Hallazgos de la verificación (Fase 1)
 

@@ -26,8 +26,10 @@ const URGENCY_COLORS: Record<string, string> = {
   critical: 'text-red-400',
 }
 
-export function TodoItem({ todo, onClick, onStatusChange, onDelete }: {
+export function TodoItem({ todo, epicName, epicColor, onClick, onStatusChange, onDelete }: {
   todo: Todo
+  epicName?: string
+  epicColor?: string
   onClick: () => void
   onStatusChange: (status: TodoStatus) => void
   onDelete: () => void
@@ -68,9 +70,12 @@ export function TodoItem({ todo, onClick, onStatusChange, onDelete }: {
           <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[todo.status]}`}>
             {STATUS_LABELS[todo.status]}
           </span>
-          {todo.epic && (
-            <span className="text-[10px] text-nintendo-muted bg-nintendo-bg px-2 py-0.5 rounded-full">
-              {todo.epic}
+          {epicName && (
+            <span className="flex items-center gap-1 text-[10px] text-nintendo-muted bg-nintendo-bg px-2 py-0.5 rounded-full">
+              {epicColor && (
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: epicColor }} />
+              )}
+              {epicName}
             </span>
           )}
           <span className="flex items-center gap-1 text-[10px] text-nintendo-muted">

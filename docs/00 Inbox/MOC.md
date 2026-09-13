@@ -13,10 +13,9 @@ Punto de entrada al vault. Toda nota nueva se enlaza aquí.
 
 ## Estado del proyecto
 
-**Fase 2 — Backend** completada (2026-09-13): Supabase local con esquema
-completo (épicas, proyectos, tareas, tags), RLS verificada con 22 tests pgTAP,
-seed de desarrollo y tipos TypeScript generados. Fases 0–1 previas. El roadmap
-de fases vive en [[Fases del proyecto]].
+**Fase 3 — Nube** completada (2026-09-13): auth con sesión persistente, capa de
+datos Supabase con UI optimista, migración Sísifo desde IndexedDB y backup v3.
+Fases 0–2 previas. El roadmap de fases vive en [[Fases del proyecto]].
 
 ## 00 Inbox
 
@@ -33,10 +32,12 @@ de fases vive en [[Fases del proyecto]].
 - [[ADR-006 Workflow IA con RPI]]
 - [[ADR-007 Jerarquia Epicas Proyectos Tareas]] — Propuesto
 - [[ADR-008 Estrategia de datos nube-first]]
+- [[ADR-009 Migracion Sísifo mapeo y marcador]]
 
 ## 20 Tecnico
 
 - [[App de escritorio (base TodoDex)]]
+- [[Capa de datos Supabase]]
 - [[Paridad funcional con TodoDex]]
 - [[Modelo de datos objetivo (Supabase)]]
 - [[Backend Supabase]]

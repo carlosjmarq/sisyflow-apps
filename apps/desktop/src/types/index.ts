@@ -1,8 +1,22 @@
+export interface Epic {
+  id: string
+  name: string
+  colorCode: string
+  createdAt: Date
+}
+
+export type ProjectStatus = 'active' | 'paused' | 'completed'
+
 export interface Project {
-  id?: number
+  id: string
+  epicId: string
   name: string
   color: string
+  status: ProjectStatus
   createdAt: Date
+  epic?: Pick<Epic, 'id' | 'name' | 'colorCode'>
+  todoCount?: number
+  doneCount?: number
 }
 
 export type TodoStatus = 'backlog' | 'todo' | 'in-progress' | 'done' | 'cancelled'
@@ -40,32 +54,32 @@ export const PROJECT_COLORS = [
   { value: 'butter', label: 'Mantequilla', bg: '#FFF9C4', ring: 'ring-butters-dark' },
 ] as const
 
+export const DEFAULT_HEX = '#C7F9CC'
+
+export function paletteHex(colorOrHex: string): string {
+  return PROJECT_COLORS.find((c) => c.value === colorOrHex)?.bg ?? colorOrHex
+}
+
 export interface Todo {
-  id?: number
-  projectId: number
+  id: string
+  projectId: string
   title: string
   status: TodoStatus
   priority: Priority
   urgency: Urgency
-  epic: string
   content: string
   contentFormat?: 'markdown' | 'blocknote'
   createdAt: Date
   updatedAt?: Date
   expirationDate: Date | null
-}
-
-export interface Epic {
-  id?: number
-  projectId: number
-  name: string
+  completedAt?: Date | null
 }
 
 export type TagColor = typeof PROJECT_COLORS[number]['value']
 
 export interface Tag {
-  id?: number
-  projectId: number
+  id: string
+  projectId: string
   name: string
   color?: TagColor
 }

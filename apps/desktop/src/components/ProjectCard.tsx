@@ -2,26 +2,21 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Folder, Trash2, Edit3, CheckSquare } from 'lucide-react'
 import { Card, Button, ConfirmDialog, Dialog, DialogContent, DialogTitle, Input, Tooltip } from './ui'
-import { useProjects, useProjectTodos } from '../hooks/useProjects'
-import { PROJECT_COLORS } from '../types'
+import { PROJECT_COLORS, type Project } from '../types'
+import type { ProjectUpdatableFields } from '../data/mappers'
 
-const COLOR_MAP: Record<string, string> = Object.fromEntries(
-  PROJECT_COLORS.map((c) => [c.value, c.bg])
-)
-
-export function ProjectCard({ project, onDelete }: {
-  project: { id?: number; name: string; color: string }
-  onDelete: (id: number) => void
+export function ProjectCard({ project, onDelete, onUpdate }: {
+  project: Project
+  onDelete: (id: string) => void
+  onUpdate: (id: string, updates: ProjectUpdatableFields) => void
 }) {
   const navigate = useNavigate()
-  const { todos } = useProjectTodos(project.id)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const { updateProject } = useProjects()
 
-  const bgColor = COLOR_MAP[project.color] || '#C7F9CC'
-  const todoCount = todos.length
-  const doneCount = todos.filter((t) => t.status === 'done').length
+  const bgColor = project.color || PROJECT_COLORS[0].bg
+  const todoCount = project.todoCount ?? 0
+  const doneCount = project.doneCount ?? 0
 
   return (
     <>
@@ -51,10 +46,19 @@ export function ProjectCard({ project, onDelete }: {
           </div>
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 flex flex-col gap-1">
           <Tooltip content={project.name}>
             <h3 className="font-bold text-lg text-nintendo-text truncate">{project.name}</h3>
           </Tooltip>
+          {project.epic && (
+            <span className="flex items-center gap-1.5 text-[10px] text-nintendo-text/60 self-start bg-white/40 px-2 py-0.5 rounded-full">
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: project.epic.colorCode }}
+              />
+              {project.epic.name}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2 text-sm text-nintendo-text/60">
@@ -69,8 +73,8 @@ export function ProjectCard({ project, onDelete }: {
           <EditProjectForm
             initialName={project.name}
             initialColor={project.color}
-            onSave={async (name, color) => {
-              if (project.id != null) await updateProject(project.id, { name, color })
+            onSave={(name, color) => {
+              onUpdate(project.id, { name, color })
               setEditOpen(false)
             }}
             onCancel={() => setEditOpen(false)}
@@ -83,7 +87,7 @@ export function ProjectCard({ project, onDelete }: {
         onOpenChange={setDeleteOpen}
         title="Eliminar proyecto"
         description={`Se eliminara el proyecto "${project.name}" y todas sus tareas. Esta accion no se puede deshacer.`}
-        onConfirm={() => { if (project.id != null) onDelete(project.id) }}
+        onConfirm={() => onDelete(project.id)}
       />
     </>
   )
@@ -107,9 +111,9 @@ function EditProjectForm({ initialName, initialColor, onSave, onCancel }: {
           {PROJECT_COLORS.map((c) => (
             <button
               key={c.value}
-              onClick={() => setColor(c.value)}
+              onClick={() => setColor(c.bg)}
               className={`w-10 h-10 rounded-xl border-2 transition-all ${
-                color === c.value ? 'border-nintendo-text scale-110' : 'border-transparent'
+                color === c.bg ? 'border-nintendo-text scale-110' : 'border-transparent'
               }`}
               style={{ backgroundColor: c.bg }}
             />

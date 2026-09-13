@@ -1,17 +1,13 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Plus, ArrowUpDown, X, SearchX } from 'lucide-react'
-import { useProjects, useProjectTodos, useProjectEpics } from '../hooks/useProjects'
+import { useProjects, useProjectTodos } from '../hooks/useProjects'
 import { TodoItem } from './TodoItem'
 import { TodoDrawer } from './TodoDrawer'
 import { TodoForm } from './TodoForm'
 import { Button, Select } from './ui'
 import { useMemo, useState } from 'react'
 import type { Todo, TodoSortKey, TodoStatus, Priority } from '../types'
-import { PROJECT_COLORS, TODO_SORT_OPTIONS, STATUS_LABELS, PRIORITY_LABELS } from '../types'
-
-const COLOR_MAP: Record<string, string> = Object.fromEntries(
-  PROJECT_COLORS.map((c) => [c.value, c.bg])
-)
+import { TODO_SORT_OPTIONS, STATUS_LABELS, PRIORITY_LABELS, DEFAULT_HEX } from '../types'
 
 const STATUS_FILTER_OPTIONS = [
   { value: 'all', label: 'Todos los estados' },
@@ -28,39 +24,27 @@ export function TodoList() {
   const navigate = useNavigate()
   const { projects } = useProjects()
   const [sortBy, setSortBy] = useState<TodoSortKey>('createdAt')
-  const { todos, loading, createTodo, updateTodo, deleteTodo } = useProjectTodos(
-    projectId ? Number(projectId) : undefined,
-    sortBy
-  )
+  const { todos, loading, createTodo, updateTodo, deleteTodo } = useProjectTodos(projectId, sortBy)
 
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | TodoStatus>('all')
   const [filterPriority, setFilterPriority] = useState<'all' | Priority>('all')
-  const [filterEpic, setFilterEpic] = useState('all')
 
-  const { epics } = useProjectEpics(projectId ? Number(projectId) : undefined)
-
-  const project = projects.find((p) => p.id === Number(projectId))
-  const bgColor = project ? COLOR_MAP[project.color] || '#C7F9CC' : undefined
-
-  const epicFilterOptions = useMemo(() => [
-    { value: 'all', label: 'Todas las épicas' },
-    ...epics.map((e) => ({ value: e.name, label: e.name })),
-  ], [epics])
+  const project = projects.find((p) => p.id === projectId)
+  const bgColor = project ? project.color || DEFAULT_HEX : undefined
+  const projectEpic = project?.epic ?? null
 
   const filteredTodos = useMemo(() => todos.filter((t) =>
     (filterStatus === 'all' || t.status === filterStatus) &&
-    (filterPriority === 'all' || t.priority === filterPriority) &&
-    (filterEpic === 'all' || t.epic === filterEpic)
-  ), [todos, filterStatus, filterPriority, filterEpic])
+    (filterPriority === 'all' || t.priority === filterPriority)
+  ), [todos, filterStatus, filterPriority])
 
-  const hasActiveFilters = filterStatus !== 'all' || filterPriority !== 'all' || filterEpic !== 'all'
+  const hasActiveFilters = filterStatus !== 'all' || filterPriority !== 'all'
   const clearFilters = () => {
     setFilterStatus('all')
     setFilterPriority('all')
-    setFilterEpic('all')
   }
 
   const pendingTodos = filteredTodos.filter(t => t.status !== 'done' && t.status !== 'cancelled')
@@ -72,7 +56,7 @@ export function TodoList() {
     setDrawerOpen(true)
   }
 
-  const handleUpdateTodo = async (id: number, updates: Partial<Todo>) => {
+  const handleUpdateTodo = async (id: string, updates: Partial<Todo>) => {
     await updateTodo(id, updates)
     if (selectedTodo?.id === id) {
       setSelectedTodo((prev) => prev ? { ...prev, ...updates } : null)
@@ -106,8 +90,16 @@ export function TodoList() {
           <h1 className="text-xl font-bold text-nintendo-text">
             {project?.name || 'Proyecto'}
           </h1>
-          <p className="text-sm text-nintendo-muted">
-            {hasActiveFilters ? `${filteredTodos.length} de ${todos.length} tareas` : `${todos.length} tareas`}
+          <p className="text-sm text-nintendo-muted flex items-center gap-2">
+            {projectEpic && (
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: projectEpic.colorCode }} />
+                {projectEpic.name}
+              </span>
+            )}
+            <span>
+              {hasActiveFilters ? `${filteredTodos.length} de ${todos.length} tareas` : `${todos.length} tareas`}
+            </span>
           </p>
         </div>
         <Button variant="primary" onClick={() => setFormOpen(true)}>
@@ -134,13 +126,6 @@ export function TodoList() {
           value={filterPriority}
           onChange={(v) => setFilterPriority(v as 'all' | Priority)}
         />
-        {epicFilterOptions.length > 1 && (
-          <Select
-            options={epicFilterOptions}
-            value={filterEpic}
-            onChange={setFilterEpic}
-          />
-        )}
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
@@ -181,9 +166,11 @@ export function TodoList() {
                   <TodoItem
                     key={todo.id}
                     todo={todo}
+                    epicName={projectEpic?.name}
+                    epicColor={projectEpic?.colorCode}
                     onClick={() => handleSelectTodo(todo)}
-                    onStatusChange={(status) => todo.id != null && handleUpdateTodo(todo.id, { status })}
-                    onDelete={() => todo.id != null && deleteTodo(todo.id)}
+                    onStatusChange={(status) => handleUpdateTodo(todo.id, { status })}
+                    onDelete={() => deleteTodo(todo.id)}
                   />
                 ))}
               </div>
@@ -204,9 +191,11 @@ export function TodoList() {
                   <TodoItem
                     key={todo.id}
                     todo={todo}
+                    epicName={projectEpic?.name}
+                    epicColor={projectEpic?.colorCode}
                     onClick={() => handleSelectTodo(todo)}
-                    onStatusChange={(status) => todo.id != null && handleUpdateTodo(todo.id, { status })}
-                    onDelete={() => todo.id != null && deleteTodo(todo.id)}
+                    onStatusChange={(status) => handleUpdateTodo(todo.id, { status })}
+                    onDelete={() => deleteTodo(todo.id)}
                   />
                 ))}
               </div>
@@ -219,9 +208,11 @@ export function TodoList() {
                   <TodoItem
                     key={todo.id}
                     todo={todo}
+                    epicName={projectEpic?.name}
+                    epicColor={projectEpic?.colorCode}
                     onClick={() => handleSelectTodo(todo)}
-                    onStatusChange={(status) => todo.id != null && handleUpdateTodo(todo.id, { status })}
-                    onDelete={() => todo.id != null && deleteTodo(todo.id)}
+                    onStatusChange={(status) => handleUpdateTodo(todo.id, { status })}
+                    onDelete={() => deleteTodo(todo.id)}
                   />
                 ))}
               </div>
@@ -234,9 +225,8 @@ export function TodoList() {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         todo={selectedTodo}
-        onUpdate={(updates) => {
-          if (selectedTodo?.id != null) handleUpdateTodo(selectedTodo.id, updates)
-        }}
+        projectEpic={projectEpic}
+        onUpdate={handleUpdateTodo}
         onDelete={() => {
           if (selectedTodo?.id != null) {
             deleteTodo(selectedTodo.id)
@@ -248,9 +238,7 @@ export function TodoList() {
       <TodoForm
         open={formOpen}
         onOpenChange={setFormOpen}
-        onCreate={(todo) => {
-          createTodo({ ...todo, projectId: Number(projectId) })
-        }}
+        onCreate={createTodo}
       />
     </div>
   )

@@ -77,7 +77,8 @@ migración Sísifo (US 1.2).
 ## Pendientes
 
 - [x] `supabase init` y primera migración (Fase 2, 2026-09-13).
-- [ ] Integrar el cliente en el desktop con la publishable key (fase `/cloud`).
+- [x] Cliente integrado en el desktop con la publishable key y sesión
+      persistente (Fase 3, 2026-09-13).
 - [ ] Definir proyecto remoto de producción.
 
 ## Relaciones

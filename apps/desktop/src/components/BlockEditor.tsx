@@ -1,29 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useCreateBlockNote, useEditorChange } from '@blocknote/react'
 import { BlockNoteView } from '@blocknote/mantine'
-import { BlockNoteEditor } from '@blocknote/core'
+import type { Block } from '@blocknote/core'
 import '@blocknote/core/fonts/inter.css'
 import '@blocknote/mantine/style.css'
-import { marked } from 'marked'
-import type { Block } from '@blocknote/core'
+import { markdownToBlocks } from '../lib/content'
 
 interface BlockEditorProps {
   content: string
   contentFormat?: 'markdown' | 'blocknote'
-  todoId?: number
+  todoId?: string
   onChange: (content: string, contentFormat: 'blocknote') => void
 }
 
 export function BlockEditor({ content, contentFormat, todoId, onChange }: BlockEditorProps) {
   const [blocks, setBlocks] = useState<Block[] | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     setBlocks(null)
-    setError(null)
 
     async function loadBlocks() {
       if (contentFormat === 'blocknote') {
@@ -34,28 +32,15 @@ export function BlockEditor({ content, contentFormat, todoId, onChange }: BlockE
             setBlocks(parsed)
             setLoading(false)
           }
+          return
         } catch {
-          await migrateMarkdown()
+          // contenido legacy: se convierte desde markdown
         }
-      } else {
-        await migrateMarkdown()
       }
-    }
-
-    async function migrateMarkdown() {
-      try {
-        const html = marked.parse(content || '', { async: false }) as string
-        const tempEditor = BlockNoteEditor.create({})
-        const convertedBlocks = await tempEditor.tryParseHTMLToBlocks(html)
-        if (!cancelled) {
-          setBlocks(convertedBlocks as Block[])
-          setLoading(false)
-        }
-      } catch {
-        if (!cancelled) {
-          setBlocks([])
-          setLoading(false)
-        }
+      const converted = (await markdownToBlocks(content)) as Block[]
+      if (!cancelled) {
+        setBlocks(converted)
+        setLoading(false)
       }
     }
 
@@ -64,7 +49,7 @@ export function BlockEditor({ content, contentFormat, todoId, onChange }: BlockE
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todoId])
 
-  const editorKey = useMemo(() => todoId != null ? `editor-${todoId}` : 'editor-new', [todoId])
+  const editorKey = useMemo(() => todoId ? `editor-${todoId}` : 'editor-new', [todoId])
 
   if (loading || !blocks) {
     return (

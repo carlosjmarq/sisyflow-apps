@@ -29,12 +29,14 @@ SisyFlow. Esta nota documenta su estado actual y su proyección a Supabase.
   - Tareas nuevas se crean con `content: '[]'` y `contentFormat: 'blocknote'`.
 - El editor vive en el drawer/formulario de tarea (`TodoForm`, `TodoDrawer`).
 
-### Proyección a Supabase (fases `/cloud` y `/hierarchy`)
+### Proyección a Supabase (implementada en Fase 3)
 
-- `todos.content` pasa a `jsonb` y `content_format` a `text` con default
-  `'blocknote'` ([[Modelo de datos objetivo (Supabase)]]).
+- `todos.content` es `jsonb` y `content_format` es `text` con default
+  `'blocknote'`; los mappers convierten string ↔ jsonb
+  ([[Capa de datos Supabase]]).
 - La migración Sísifo convierte registros legacy (`contentFormat: 'markdown'`)
-  a bloques antes del upsert, reutilizando la función existente con `marked`.
+  a bloques con `marked` + `tryParseHTMLToBlocks` antes del upsert.
+- El guardado del contenido usa debounce de 800 ms; se fuerza al cerrar el drawer.
 - El contenido no se transforma a otro formato: BlockNote sigue siendo el editor.
 
 ### Requisitos de conservación
@@ -45,7 +47,7 @@ SisyFlow. Esta nota documenta su estado actual y su proyección a Supabase.
 
 ## Pendientes
 
-- [ ] Verificar el inventario contra el código real al copiar (fase `/desktop`).
+- [x] Verificar el inventario contra el código real al copiar (Fase 1, 2026-09-13).
 - [ ] Confirmar el tamaño típico de `content` para decidir límites de payload.
 
 ## Relaciones

@@ -1,30 +1,37 @@
-import { db } from './database'
-import type { Project, Todo, Epic, Tag } from '../types'
+import { supabase } from '../lib/supabase'
+import type { LegacyData } from '../db/database'
+import type { EpicInsert, ProjectInsert, TagInsert, TodoInsert } from '../data/mappers'
+import { buildMigrationRows, upsertInChunks } from '../migration/sisifo'
 
-interface BackupData {
+const BACKUP_VERSION = 3
+
+interface BackupV3 {
   version: number
   exportedAt: string
-  projects: Project[]
-  todos: Todo[]
-  epics: Epic[]
-  tags?: Tag[]
+  epics: unknown[]
+  projects: unknown[]
+  todos: unknown[]
+  tags: unknown[]
 }
 
-export async function exportBackup() {
-  const [projects, todos, epics, tags] = await Promise.all([
-    db.projects.toArray(),
-    db.todos.toArray(),
-    db.epics.toArray(),
-    db.tags.toArray(),
+export async function exportBackup(): Promise<void> {
+  const [epics, projects, todos, tags] = await Promise.all([
+    supabase.from('epics').select('*'),
+    supabase.from('projects').select('*'),
+    supabase.from('todos').select('*'),
+    supabase.from('tags').select('*'),
   ])
 
-  const backup: BackupData = {
-    version: 2,
+  const error = epics.error ?? projects.error ?? todos.error ?? tags.error
+  if (error) throw new Error(`No se pudo exportar el backup: ${error.message}`)
+
+  const backup: BackupV3 = {
+    version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
-    projects,
-    todos,
-    epics,
-    tags,
+    epics: epics.data ?? [],
+    projects: projects.data ?? [],
+    todos: todos.data ?? [],
+    tags: tags.data ?? [],
   }
 
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
@@ -36,37 +43,50 @@ export async function exportBackup() {
   URL.revokeObjectURL(url)
 }
 
-export async function importBackup(file: File) {
-  const text = await file.text()
-  const backup: BackupData = JSON.parse(text)
-
-  if (!Array.isArray(backup.projects) || !Array.isArray(backup.todos) || !Array.isArray(backup.epics)) {
-    throw new Error('Formato de backup invalido')
+export async function importBackup(
+  file: File,
+  userId: string,
+  onProgress?: (step: string) => void
+): Promise<void> {
+  const parsed = JSON.parse(await file.text()) as {
+    version?: number
+    projects?: unknown
+    todos?: unknown
+    epics?: unknown
+    tags?: unknown
   }
 
-  const projects = backup.projects.map((p) => ({
-    ...p,
-    createdAt: new Date(p.createdAt),
-  }))
+  if (parsed.version === BACKUP_VERSION) {
+    const epics = requireArray(parsed.epics, 'epics')
+    const projects = requireArray(parsed.projects, 'projects')
+    const todos = requireArray(parsed.todos, 'todos')
+    const tags = requireArray(parsed.tags, 'tags')
 
-  const todos = backup.todos.map((t) => ({
-    ...t,
-    createdAt: new Date(t.createdAt),
-    updatedAt: t.updatedAt ? new Date(t.updatedAt) : undefined,
-    expirationDate: t.expirationDate ? new Date(t.expirationDate) : null,
-  }))
+    const withUser = <T extends { user_id?: string }>(rows: T[]): T[] =>
+      rows.map((row) => ({ ...row, user_id: userId }))
 
-  const epics = backup.epics.map((e) => ({ ...e }))
-  const tags = (backup.tags ?? []).map((t) => ({ ...t }))
+    const options = { onConflict: 'id', ignoreDuplicates: false }
+    await upsertInChunks('Épicas', withUser(epics as EpicInsert[]), (c) => supabase.from('epics').upsert(c, options), onProgress)
+    await upsertInChunks('Proyectos', withUser(projects as ProjectInsert[]), (c) => supabase.from('projects').upsert(c, options), onProgress)
+    await upsertInChunks('Tareas', withUser(todos as TodoInsert[]), (c) => supabase.from('todos').upsert(c, options), onProgress)
+    await upsertInChunks('Tags', withUser(tags as TagInsert[]), (c) => supabase.from('tags').upsert(c, options), onProgress)
+    return
+  }
 
-  await db.transaction('rw', db.projects, db.todos, db.epics, db.tags, async () => {
-    await db.projects.clear()
-    await db.todos.clear()
-    await db.epics.clear()
-    await db.tags.clear()
-    await db.projects.bulkAdd(projects)
-    await db.todos.bulkAdd(todos as Todo[])
-    await db.epics.bulkAdd(epics)
-    await db.tags.bulkAdd(tags)
-  })
+  if (Array.isArray(parsed.projects) && Array.isArray(parsed.todos) && Array.isArray(parsed.epics)) {
+    const { rows } = await buildMigrationRows(parsed as LegacyData, userId)
+    const options = { onConflict: 'id', ignoreDuplicates: true }
+    await upsertInChunks('Épicas', rows.epics, (c) => supabase.from('epics').upsert(c, options), onProgress)
+    await upsertInChunks('Proyectos', rows.projects, (c) => supabase.from('projects').upsert(c, options), onProgress)
+    await upsertInChunks('Tareas', rows.todos, (c) => supabase.from('todos').upsert(c, options), onProgress)
+    await upsertInChunks('Tags', rows.tags, (c) => supabase.from('tags').upsert(c, options), onProgress)
+    return
+  }
+
+  throw new Error('Formato de backup inválido')
+}
+
+function requireArray(value: unknown, field: string): unknown[] {
+  if (!Array.isArray(value)) throw new Error(`Backup inválido: falta el arreglo "${field}"`)
+  return value
 }

@@ -8,7 +8,8 @@ date: 2026-09-13
 
 ## Status
 
-Aceptado (decisión confirmada el 2026-09-13)
+Aceptado (decisión confirmada el 2026-09-13) — implementado en la Fase 3
+(2026-09-13): auth, capa de datos optimista y migración Sísifo operativas.
 
 ## Contexto
 

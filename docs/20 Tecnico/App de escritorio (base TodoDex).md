@@ -15,13 +15,17 @@ SisyFlow el 2026-09-13 ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
 
 ## Contenido
 
-### Estado actual (Fase 1)
+### Estado actual (Fases 1–3)
 
 - Paquete `sisyflow-desktop@0.1.0` dentro del workspace pnpm de la raíz
   (`pnpm-workspace.yaml`, `.npmrc` con `node-linker=hoisted`).
 - Verificado el 2026-09-13: `pnpm lint`, `npx tsc --noEmit` y `pnpm dev`
   (Vite + Electron) en verde.
 - Renombre: `appId com.sisyflow.app`, `productName SisyFlow`, títulos de UI.
+- **Fase 3**: auth Supabase con sesión persistente, capa de datos nube-first
+  ([[Capa de datos Supabase]]), migración Sísifo desde Dexie en Configuración y
+  backup v3. Nuevas carpetas `src/auth/`, `src/data/`, `src/lib/`,
+  `src/migration/`; `.env` (gitignored) con URL y publishable key.
 - Se conservan a propósito el nombre de base Dexie `TodoDexDB` (la migración
   Sísifo debe leer esos datos) y la clave `tododex.drawerWidth`; el backup ahora
   exporta `sisyflow-backup-<fecha>.json`.

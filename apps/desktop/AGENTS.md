@@ -11,27 +11,38 @@ App de escritorio de SisyFlow. Parte del monorepo `sisyflow-apps` ([[ADR-002 Mon
 - Electron 30 + Vite 5 (`vite-plugin-electron`, `vite-plugin-electron-renderer`)
 - React 18 + TypeScript estricto + Tailwind CSS 3 (estética pastel "Nintendo OS")
 - Editor de contenido: BlockNote + Mantine 8 ([[Editor de contenido (BlockNote)]])
-- Datos: Dexie 4 (IndexedDB) solo como origen de la migración; destino Supabase
-  ([[ADR-008 Estrategia de datos nube-first]])
+- Datos: Supabase nube-first con UI optimista ([[Capa de datos Supabase]]);
+  Dexie 4 queda solo como origen de la migración Sísifo
+- Auth: Supabase email/contraseña con sesión persistente (`src/auth/`)
 - Router: react-router-dom 7 (HashRouter)
 - pnpm con `node-linker=hoisted` (`.npmrc` en la raíz del monorepo)
 
-## Estructura (heredada de TodoDex)
+## Estructura
 
 ```
 apps/desktop/
 ├── electron/          # main.ts, preload.ts (contextBridge)
 ├── src/
-│   ├── components/    # UI: listas, formularios, drawer, editor
-│   │   └── ui/        # primitivas (Button, Card, Dialog, Select...)
-│   ├── db/            # database.ts (Dexie), backup.ts
-│   ├── hooks/         # useProjects y hooks de datos
-│   └── types/         # interfaces y constantes; supabase.ts (tipos generados en Fase 2)
+│   ├── auth/          # AuthProvider, AuthScreen (Supabase auth)
+│   ├── components/    # UI: listas, formularios, drawer, editor, Settings
+│   │   └── ui/        # primitivas (Button, Card, Dialog, Select, Toast...)
+│   ├── data/          # mappers fila ↔ dominio
+│   ├── db/            # database.ts (Dexie legacy), backup.ts (v3)
+│   ├── hooks/         # hooks de datos con optimistic + reversión
+│   ├── lib/           # supabase.ts (cliente), content.ts (markdown→bloques)
+│   ├── migration/     # sisifo.ts (migración IndexedDB → Supabase)
+│   └── types/         # interfaces; supabase.ts (tipos generados)
 ├── index.html
 ├── vite.config.ts
 ├── tailwind.config.ts
 └── electron-builder.json5
 ```
+
+## Entorno
+
+Copiar `.env.example` a `.env` (gitignored) con la URL y la publishable key de
+Supabase local (`supabase status` en `backend/`). El renderer usa solo la
+publishable key; la secret/service_role nunca va en la app.
 
 ## Renombre a SisyFlow (aplicado en la Fase 1)
 
@@ -65,6 +76,9 @@ pnpm build               # tsc + vite build + electron-builder
 - **Paridad**: no romper ninguna funcionalidad de [[Paridad funcional con TodoDex]]
   (todos y editor de contenido). Cambios que la afecten requieren ADR.
 - Sin store global (zustand/redux): hooks + capa de datos, como el proyecto base.
+- La capa de datos vive en hooks (`src/hooks/`) con mutaciones optimistas y
+  reversión + aviso (`ToastProvider`); los componentes no importan el cliente
+  Supabase directamente.
 - Secretos solo por variables de entorno (`.env` gitignored); nunca hardcodeados.
 - Cargar skills antes de codificar: `vercel-react-best-practices`, `electron-dev`,
   `frontend-design`, `sisyflow-db`, `supabase` según el área.

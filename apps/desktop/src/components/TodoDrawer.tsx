@@ -1,24 +1,25 @@
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import type { Todo, TodoStatus, Priority, Urgency } from '../types'
 import { STATUS_LABELS, PRIORITY_LABELS, URGENCY_LABELS } from '../types'
-import { X, Trash2, Calendar, Clock, ChevronDown, Pencil } from 'lucide-react'
+import { X, Trash2, Calendar, Clock, Pencil } from 'lucide-react'
 import { BlockEditor } from './BlockEditor'
-import { useProjectEpics } from '../hooks/useProjects'
 import { ConfirmDialog, Tooltip } from './ui'
 
 interface TodoDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   todo: Todo | null
-  onUpdate: (updates: Partial<Todo>) => void
+  projectEpic?: { name: string; colorCode: string } | null
+  onUpdate: (todoId: string, updates: Partial<Todo>) => void
   onDelete: () => void
 }
 
 const DRAWER_WIDTH_KEY = 'tododex.drawerWidth'
 const DRAWER_MIN_WIDTH = 360
 const DRAWER_DEFAULT_WIDTH = 520
+const CONTENT_DEBOUNCE_MS = 800
 
-export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: TodoDrawerProps) {
+export function TodoDrawer({ open, onOpenChange, todo, projectEpic, onUpdate, onDelete }: TodoDrawerProps) {
   const [visible, setVisible] = useState(false)
   const [animating, setAnimating] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -27,6 +28,56 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
     return saved >= DRAWER_MIN_WIDTH ? saved : DRAWER_DEFAULT_WIDTH
   })
   const widthRef = useRef(width)
+
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleDraft, setTitleDraft] = useState('')
+  const titleInputRef = useRef<HTMLInputElement>(null)
+
+  // Debounce del contenido: BlockNote emite en cada cambio; escribir a Supabase
+  // en cada tecla saturaría la red. Se aplica tras 800 ms sin cambios y se
+  // fuerza el guardado al cambiar de tarea, cerrar el drawer o desmontar.
+  const onUpdateRef = useRef(onUpdate)
+  useEffect(() => {
+    onUpdateRef.current = onUpdate
+  }, [onUpdate])
+
+  const contentTimer = useRef<ReturnType<typeof setTimeout>>()
+  const pendingContent = useRef<{ content: string; contentFormat: 'blocknote' } | null>(null)
+  const pendingTodoId = useRef<string | null>(null)
+
+  const flushContent = useCallback(() => {
+    if (contentTimer.current) {
+      clearTimeout(contentTimer.current)
+      contentTimer.current = undefined
+    }
+    if (pendingContent.current && pendingTodoId.current) {
+      onUpdateRef.current(pendingTodoId.current, pendingContent.current)
+    }
+    pendingContent.current = null
+    pendingTodoId.current = null
+  }, [])
+
+  const scheduleContentChange = useCallback((todoId: string, content: string, contentFormat: 'blocknote') => {
+    pendingTodoId.current = todoId
+    pendingContent.current = { content, contentFormat }
+    if (contentTimer.current) clearTimeout(contentTimer.current)
+    contentTimer.current = setTimeout(() => {
+      if (pendingContent.current && pendingTodoId.current) {
+        onUpdateRef.current(pendingTodoId.current, pendingContent.current)
+      }
+      pendingContent.current = null
+      pendingTodoId.current = null
+      contentTimer.current = undefined
+    }, CONTENT_DEBOUNCE_MS)
+  }, [])
+
+  useEffect(() => () => flushContent(), [flushContent])
+  useEffect(() => {
+    flushContent()
+  }, [todo?.id, flushContent])
+  useEffect(() => {
+    if (!open) flushContent()
+  }, [open, flushContent])
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -49,17 +100,8 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
     window.addEventListener('mouseup', onUp)
   }
 
-  const { epics, ensureEpic } = useProjectEpics(todo?.projectId)
-  const [epicInput, setEpicInput] = useState('')
-  const [showEpicSuggestions, setShowEpicSuggestions] = useState(false)
-  const [editingTitle, setEditingTitle] = useState(false)
-  const [titleDraft, setTitleDraft] = useState('')
-  const titleInputRef = useRef<HTMLInputElement>(null)
-  const epicRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
     if (todo) {
-      setEpicInput(todo.epic || '')
       setTitleDraft(todo.title)
       setEditingTitle(false)
     }
@@ -83,16 +125,6 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
     }
   }, [open])
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (epicRef.current && !epicRef.current.contains(e.target as Node)) {
-        setShowEpicSuggestions(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
   if (!visible || !todo) return null
 
   const formatDate = (d: Date | string | null) => {
@@ -106,18 +138,6 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
   }
 
   const isExpired = todo.expirationDate && new Date(todo.expirationDate) < new Date()
-
-  const handleEpicChange = (value: string) => {
-    setEpicInput(value)
-    onUpdate({ epic: value })
-    if (value.trim()) {
-      ensureEpic(value)
-    }
-  }
-
-  const filteredEpics = epics.filter(
-    (e) => epicInput && e.name.toLowerCase().includes(epicInput.toLowerCase()) && e.name !== epicInput
-  )
 
   return (
     <>
@@ -146,7 +166,7 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
               onChange={(e) => setTitleDraft(e.target.value)}
               onBlur={() => {
                 if (titleDraft.trim() && titleDraft !== todo.title) {
-                  onUpdate({ title: titleDraft.trim() })
+                  onUpdate(todo.id, { title: titleDraft.trim() })
                 } else {
                   setTitleDraft(todo.title)
                 }
@@ -155,7 +175,7 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   if (titleDraft.trim() && titleDraft !== todo.title) {
-                    onUpdate({ title: titleDraft.trim() })
+                    onUpdate(todo.id, { title: titleDraft.trim() })
                   } else {
                     setTitleDraft(todo.title)
                   }
@@ -194,7 +214,7 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
             <Field label="Estado">
               <select
                 value={todo.status}
-                onChange={(e) => onUpdate({ status: e.target.value as TodoStatus })}
+                onChange={(e) => onUpdate(todo.id, { status: e.target.value as TodoStatus })}
                 className="text-xs font-medium bg-nintendo-bg rounded-lg px-2 py-1 border-0 outline-none cursor-pointer"
               >
                 {Object.entries(STATUS_LABELS).map(([k, v]) => (
@@ -206,7 +226,7 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
             <Field label="Prioridad">
               <select
                 value={todo.priority}
-                onChange={(e) => onUpdate({ priority: e.target.value as Priority })}
+                onChange={(e) => onUpdate(todo.id, { priority: e.target.value as Priority })}
                 className="text-xs font-medium bg-nintendo-bg rounded-lg px-2 py-1 border-0 outline-none cursor-pointer"
               >
                 {Object.entries(PRIORITY_LABELS).map(([k, v]) => (
@@ -218,7 +238,7 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
             <Field label="Urgencia">
               <select
                 value={todo.urgency}
-                onChange={(e) => onUpdate({ urgency: e.target.value as Urgency })}
+                onChange={(e) => onUpdate(todo.id, { urgency: e.target.value as Urgency })}
                 className="text-xs font-medium bg-nintendo-bg rounded-lg px-2 py-1 border-0 outline-none cursor-pointer"
               >
                 {Object.entries(URGENCY_LABELS).map(([k, v]) => (
@@ -228,46 +248,14 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
             </Field>
 
             <Field label="Épica">
-              <div ref={epicRef} className="relative">
-                <div className="flex items-center">
-                  <input
-                    value={epicInput}
-                    onChange={(e) => {
-                      handleEpicChange(e.target.value)
-                      setShowEpicSuggestions(true)
-                    }}
-                    onFocus={() => setShowEpicSuggestions(true)}
-                    placeholder="Sin épica"
-                    className="text-xs font-medium bg-nintendo-bg rounded-lg px-2 py-1 border-0 outline-none w-full"
-                  />
-                  {epics.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setShowEpicSuggestions(!showEpicSuggestions)}
-                      className="ml-1 p-0.5 rounded hover:bg-nintendo-bg"
-                    >
-                      <ChevronDown className="w-3 h-3 text-nintendo-muted" />
-                    </button>
-                  )}
-                </div>
-                {showEpicSuggestions && filteredEpics.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-nintendo-card rounded-xl shadow-soft-md border border-nintendo-border/60 overflow-hidden z-10 max-h-32 overflow-y-auto">
-                    {filteredEpics.map((epic) => (
-                      <button
-                        key={epic.id}
-                        type="button"
-                        className="w-full px-3 py-2 text-xs text-nintendo-text hover:bg-lavender/30 text-left transition-colors"
-                        onClick={() => {
-                          handleEpicChange(epic.name)
-                          setShowEpicSuggestions(false)
-                        }}
-                      >
-                        {epic.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {projectEpic ? (
+                <span className="text-xs font-medium flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: projectEpic.colorCode }} />
+                  {projectEpic.name}
+                </span>
+              ) : (
+                <span className="text-xs text-nintendo-muted">—</span>
+              )}
             </Field>
 
             <Field label="Creado">
@@ -283,7 +271,7 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
                 <input
                   type="date"
                   value={todo.expirationDate ? new Date(todo.expirationDate).toISOString().split('T')[0] : ''}
-                  onChange={(e) => onUpdate({ expirationDate: e.target.value ? new Date(e.target.value) : null })}
+                  onChange={(e) => onUpdate(todo.id, { expirationDate: e.target.value ? new Date(e.target.value) : null })}
                   className={`text-xs font-medium bg-nintendo-bg rounded-lg px-2 py-1 border-0 outline-none ${
                     isExpired ? 'text-coral-dark' : ''
                   }`}
@@ -311,7 +299,7 @@ export function TodoDrawer({ open, onOpenChange, todo, onUpdate, onDelete }: Tod
               content={todo.content}
               contentFormat={todo.contentFormat}
               todoId={todo.id}
-              onChange={(content, contentFormat) => onUpdate({ content, contentFormat })}
+              onChange={(content, contentFormat) => scheduleContentChange(todo.id, content, contentFormat)}
             />
           </div>
         </div>

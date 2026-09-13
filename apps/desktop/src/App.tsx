@@ -1,23 +1,39 @@
-import { Routes, Route } from 'react-router-dom'
-import { Plus, FolderOpen, ArrowUpDown, Download, Upload } from 'lucide-react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Plus, FolderOpen, ArrowUpDown, Download, Upload, Settings as SettingsIcon, LogOut, Mountain } from 'lucide-react'
 import { useProjects } from './hooks/useProjects'
+import { useAuth } from './auth/AuthContext'
+import { AuthScreen } from './auth/AuthScreen'
 import { ProjectCard } from './components/ProjectCard'
 import { ProjectForm } from './components/ProjectForm'
 import { TodoList } from './components/TodoList'
+import { Settings } from './components/Settings'
 import { Button, Select, ConfirmDialog, Dialog, DialogContent, DialogTitle, DialogDescription } from './components/ui'
+import { useToast } from './components/ui/ToastContext'
 import { useState, useMemo, useRef } from 'react'
 import type { ProjectSortKey } from './types'
 import { PROJECT_SORT_OPTIONS } from './types'
 import { exportBackup, importBackup } from './db/backup'
 
 function Home() {
+  const navigate = useNavigate()
+  const { user, signOut } = useAuth()
+  const { showToast } = useToast()
   const [formOpen, setFormOpen] = useState(false)
   const [sortBy, setSortBy] = useState<ProjectSortKey>('createdAt')
-  const { projects, loading, createProject, deleteProject } = useProjects()
+  const { projects, loading, createProject, deleteProject, updateProject } = useProjects()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [pendingImport, setPendingImport] = useState<File | null>(null)
   const [importError, setImportError] = useState(false)
+
+  const handleExport = async () => {
+    try {
+      await exportBackup()
+    } catch (e) {
+      console.error(e)
+      showToast('No se pudo exportar el backup')
+    }
+  }
 
   const handleFilePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -26,11 +42,12 @@ function Home() {
   }
 
   const confirmImport = async () => {
-    if (!pendingImport) return
+    if (!pendingImport || !user) return
     try {
-      await importBackup(pendingImport)
+      await importBackup(pendingImport, user.id)
       window.location.reload()
-    } catch {
+    } catch (e) {
+      console.error(e)
       setImportError(true)
     }
   }
@@ -51,7 +68,14 @@ function Home() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => exportBackup()}
+            onClick={() => navigate('/settings')}
+            title="Configuración"
+            className="p-2.5 rounded-2xl bg-white border border-nintendo-border/60 text-nintendo-muted hover:text-nintendo-text hover:border-lavender-dark/70 shadow-soft hover:shadow-soft-md transition-all duration-200"
+          >
+            <SettingsIcon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleExport}
             title="Exportar backup"
             className="p-2.5 rounded-2xl bg-white border border-nintendo-border/60 text-nintendo-muted hover:text-nintendo-text hover:border-sky-dark/70 shadow-soft hover:shadow-soft-md transition-all duration-200"
           >
@@ -63,6 +87,13 @@ function Home() {
             className="p-2.5 rounded-2xl bg-white border border-nintendo-border/60 text-nintendo-muted hover:text-nintendo-text hover:border-lavender-dark/70 shadow-soft hover:shadow-soft-md transition-all duration-200"
           >
             <Upload className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => void signOut()}
+            title="Cerrar sesión"
+            className="p-2.5 rounded-2xl bg-white border border-nintendo-border/60 text-nintendo-muted hover:text-coral-dark hover:border-coral-dark/70 shadow-soft hover:shadow-soft-md transition-all duration-200"
+          >
+            <LogOut className="w-4 h-4" />
           </button>
           <input
             ref={fileInputRef}
@@ -113,6 +144,7 @@ function Home() {
                 key={project.id}
                 project={project}
                 onDelete={deleteProject}
+                onUpdate={updateProject}
               />
             ))}
           </div>
@@ -122,14 +154,14 @@ function Home() {
       <ProjectForm
         open={formOpen}
         onOpenChange={setFormOpen}
-        onCreate={createProject}
+        onCreate={(name, color, epicId) => { void createProject(name, color, epicId) }}
       />
 
       <ConfirmDialog
         open={pendingImport != null}
         onOpenChange={(open) => { if (!open) setPendingImport(null) }}
         title="Restaurar backup"
-        description={`Se reemplazaran todos los proyectos y tareas actuales con el contenido de "${pendingImport?.name}". Esta accion no se puede deshacer.`}
+        description={`Se importaran los datos de "${pendingImport?.name}" a tu cuenta. Los registros con el mismo id se actualizaran; el resto no se borra.`}
         confirmLabel="Restaurar"
         onConfirm={confirmImport}
       />
@@ -152,11 +184,29 @@ function Home() {
 }
 
 export default function App() {
+  const { session, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-mint/40 via-lavender/30 to-sky/40">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-14 h-14 rounded-2xl bg-lavender/50 flex items-center justify-center">
+            <Mountain className="w-7 h-7 text-nintendo-text/70" />
+          </div>
+          <span className="text-sm text-nintendo-muted">Cargando SisyFlow…</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!session) return <AuthScreen />
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/project/:projectId" element={<TodoList />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </div>
   )

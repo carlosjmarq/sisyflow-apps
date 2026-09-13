@@ -1,27 +1,38 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../auth/AuthContext'
+import { mapTodo } from '../data/mappers'
 import type { Todo } from '../types'
-import { db } from '../db/database'
 
 export function useSearchTodos(search: string) {
+  const { user } = useAuth()
   const [results, setResults] = useState<Todo[]>([])
   const [loading, setLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>()
 
   const performSearch = useCallback(async () => {
-    if (!search.trim()) {
+    const query = search.trim()
+    if (!query || !user) {
       setResults([])
       setLoading(false)
       return
     }
-    const query = search.toLowerCase().trim()
-    const data = await db.todos
-      .orderBy('createdAt')
-      .reverse()
-      .filter((t) => t.title.toLowerCase().includes(query))
-      .toArray()
-    setResults(data)
+    const { data, error } = await supabase
+      .from('todos')
+      .select('*')
+      .ilike('title', `%${query}%`)
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    if (error) {
+      console.error(error)
+      setResults([])
+      setLoading(false)
+      return
+    }
+    setResults((data ?? []).map(mapTodo))
     setLoading(false)
-  }, [search])
+  }, [search, user])
 
   useEffect(() => {
     clearTimeout(debounceRef.current)
