@@ -81,6 +81,7 @@ en cada fase.
 - [x] Inventario contrastado contra el código real al copiar (Fase 1, 2026-09-13).
 - [x] Regresión de la Fase 3 (`/cloud`, 2026-09-13): lint, typecheck y build
       verdes; 16 comprobaciones de integración (auth, RLS, trigger, upsert);
+      verificación E2E de UI completa (login, CRUD, editor, migración, RLS);
       backup v3 y migración Sísifo implementados.
 - [ ] Re-verificar en `/hierarchy` y `/gamification`.
 

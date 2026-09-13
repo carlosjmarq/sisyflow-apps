@@ -74,6 +74,13 @@ cada tecla) y se fuerza el guardado al cambiar de tarea o cerrar el drawer.
 - [x] Verificación de integración en la Fase 3: 16 comprobaciones (auth,
       consultas de la app, RLS con dos usuarios, trigger de `completed_at`,
       upsert idempotente).
+- [x] Verificación E2E de la UI (Fase 3, 2026-09-13, Opera GX): login/logout,
+      sesión persistente entre recargas, CRUD de tareas, editor BlockNote con
+      flush del contenido, migración Sísifo completa y aislamiento RLS con dos
+      usuarios.
+- [ ] Robustecer la primera carga tras login: reintentar una vez ante errores
+      transitorios de JWT (se observó un `PGRST303: JWT issued at future` una
+      única vez tras un reinicio del stack, con relojes sincronizados).
 - [ ] Verificación E2E manual de la UI en el build empaquetado (fase `/deliver`).
 - [ ] Realtime de Supabase no se usa por ahora (revisar en `/gamification`).
 - [ ] Revisar índices cuando el volumen de datos crezca.
