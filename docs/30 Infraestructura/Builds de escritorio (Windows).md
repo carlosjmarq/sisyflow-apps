@@ -18,6 +18,8 @@ reproducible ([[App de escritorio (base TodoDex)]]).
 
 - `electron-builder.json5`: `appId com.sisyflow.app`, `productName SisyFlow`,
   `asar: true`, salida en `release/${version}`.
+- Ícono: `build/icon.png` (1024) y `build/icon.ico` (Windows, instalador incluido);
+  la ventana usa `public/icon.png`. Fuente editable en `assets/icon.svg`.
 - Target Windows: `nsis` x64; artefacto
   `SisyFlow-Windows-<versión>-Setup.exe`.
 - NSIS: instalación asistida (`oneClick: false`), permite elegir directorio,
@@ -36,12 +38,24 @@ reproducible ([[App de escritorio (base TodoDex)]]).
 - Instalador **sin firma digital**: Windows SmartScreen mostrará advertencia.
 - `release/` está gitignored: los instalables no se versionan.
 
+### Ícono
+
+- Fuente editable: `apps/desktop/assets/icon.svg` — Sísifo empujando la roca.
+- Paleta (variante pastel):
+  - Montaña `#D8D5F9`, persona + roca `#F0A3BE`, cara del círculo `#FAFAF5`,
+    anillo `#E5E1EB`, sombra interior `#BFBBE8`.
+- Regenerar binarios:
+  - PNG: `npx --yes sharp-cli -i assets/icon.svg -o build/icon.png resize 1024 1024`
+    (y `public/icon.png` a 512).
+  - ICO: `npx --yes png2icons build/icon.png build/icon -ico`.
+
 ### Pendientes
 
-- [ ] Ícono propio de SisyFlow (hoy usa el genérico de Electron).
+- [x] Ícono propio de SisyFlow (Fase 5, 2026-09-13).
 - [x] Renombre aplicado: `appId com.sisyflow.app`, `productName SisyFlow`,
       artefacto `SisyFlow-Windows-<versión>-Setup.exe` (Fase 1, 2026-09-13).
 - [x] Versión inicial definida: `0.1.0` (salida en `release/0.1.0`).
+- [ ] Verificar el ícono del instalador NSIS en el build de `/deliver`.
 
 ## Relaciones
 

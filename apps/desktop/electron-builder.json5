@@ -15,6 +15,7 @@
     "target": [
       "dmg"
     ],
+    "icon": "build/icon.png",
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
   },
   "win": {
@@ -26,18 +27,21 @@
         ]
       }
     ],
+    "icon": "build/icon.ico",
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
   "nsis": {
     "oneClick": false,
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false
+    "deleteAppDataOnUninstall": false,
+    "installerIcon": "build/icon.ico"
   },
   "linux": {
     "target": [
       "AppImage"
     ],
+    "icon": "build/icon.png",
     "artifactName": "${productName}-Linux-${version}.${ext}"
   }
 }

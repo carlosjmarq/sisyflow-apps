@@ -21,7 +21,10 @@ App de escritorio de SisyFlow. Parte del monorepo `sisyflow-apps` ([[ADR-002 Mon
 
 ```
 apps/desktop/
+├── assets/            # icon.svg (fuente editable del ícono)
+├── build/             # icon.png (1024) e icon.ico generados para electron-builder
 ├── electron/          # main.ts, preload.ts (contextBridge)
+├── public/            # icon.png (ventana y favicon)
 ├── src/
 │   ├── auth/          # AuthProvider, AuthScreen (Supabase auth)
 │   ├── components/    # UI: listas, formularios, drawer, editor, Settings
@@ -43,6 +46,10 @@ apps/desktop/
 Copiar `.env.example` a `.env` (gitignored) con la URL y la publishable key de
 Supabase local (`supabase status` en `backend/`). El renderer usa solo la
 publishable key; la secret/service_role nunca va en la app.
+
+Ícono: la fuente editable es `assets/icon.svg` (paleta pastel, ver
+[[Builds de escritorio (Windows)]]); los binarios `build/icon.png`, `build/icon.ico`
+y `public/icon.png` se generan con `sharp-cli` y `png2icons`.
 
 ## Renombre a SisyFlow (aplicado en la Fase 1)
 
