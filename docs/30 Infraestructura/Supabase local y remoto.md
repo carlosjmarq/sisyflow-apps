@@ -31,11 +31,27 @@ la app. Ver [[ADR-005 Supabase como backend]] y [[Backend Supabase]].
 
 ### Remoto (uso real)
 
-- Proyecto Supabase dedicado (plan gratuito alcanza para un usuario).
-- Flujo: `supabase link` (una vez) → `supabase db push` para aplicar migraciones.
-- Auth: email/contraseña habilitado; sin proveedores sociales por ahora.
-- El desktop consume URL + anon key de producción por variables de entorno.
-- `service_role` nunca viaja al cliente ([[ADR-005 Supabase como backend]]).
+- Proyecto **sisyflow** creado el 2026-09-13 en la org `kbeodhtjvxixmceccprb`:
+  ref `djjttyejsbicmrvmgyep`, región East US (North Virginia, `us-east-1`).
+- Las 4 migraciones se aplicaron con `supabase link` + `supabase db push`;
+  `supabase migration list` confirma local y remoto sincronizados.
+- Claves del proyecto: **publishable** (`sb_publishable_…`, la usa el desktop) y
+  **secret** (`sb_secret_…`, solo administración; nunca va en la app). El
+  proyecto también expone las claves legacy `anon`/`service_role` por
+  compatibilidad.
+- La contraseña de la base se define al crear el proyecto y **no se guarda en el
+  repo**; administrarla desde el dashboard o un gestor de contraseñas.
+- El desktop consume URL + publishable key de producción vía
+  `apps/desktop/.env.production` (gitignored) al generar el instalador
+  ([[Builds de escritorio (Windows)]]).
+- Flujo de despliegue: `supabase link` (una vez) → `supabase db push` por cada
+  migración nueva → regenerar el instalador.
+- Auth: email/contraseña con **confirmación por email**
+  (`enable_confirmations = true`). `config.toml` declara
+  `site_url = "sisyflow://auth/callback"` y la allowlist
+  `additional_redirect_urls` incluye el deep link y los localhost de desarrollo;
+  se aplicó al remoto con `supabase config push`. Los correos de confirmación y
+  recuperación vuelven a la app instalada ([[Builds de escritorio (Windows)]]).
 
 ### Toolchain
 
@@ -45,7 +61,9 @@ la app. Ver [[ADR-005 Supabase como backend]] y [[Backend Supabase]].
 ## Pendientes
 
 - [x] Supabase CLI actualizada a 2.117.0 (2026-09-13).
-- [ ] Crear el proyecto remoto al llegar a `/cloud`.
+- [x] Crear el proyecto remoto y aplicar las migraciones (2026-09-13).
+- [x] Configurar Site URL/redirects de Auth con el deep link
+      `sisyflow://auth/callback` (2026-09-13).
 - [ ] Definir rutina de respaldo (dump programado o export manual).
 
 ## Relaciones

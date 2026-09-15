@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../components/ui/ToastContext'
+import { processAuthCallback } from './authCallback'
 import { AuthContext } from './AuthContext'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { showToast } = useToast()
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -25,6 +28,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.subscription.unsubscribe()
     }
   }, [])
+
+  useEffect(() => {
+    const bridge = window.sisyflow
+    if (!bridge) return
+    let disposed = false
+
+    const handleCallback = async (url: string) => {
+      const result = await processAuthCallback(url)
+      if (disposed) return
+      if (result.ok) {
+        showToast('Cuenta confirmada. ¡Bienvenido!', 'success')
+      } else {
+        showToast(result.message)
+      }
+    }
+
+    const unsubscribe = bridge.onAuthCallback((url) => {
+      void handleCallback(url)
+    })
+    bridge.signalAuthReady()
+
+    return () => {
+      disposed = true
+      unsubscribe()
+    }
+  }, [showToast])
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut()

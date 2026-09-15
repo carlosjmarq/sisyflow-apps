@@ -26,6 +26,36 @@ reproducible ([[App de escritorio (base TodoDex)]]).
   no borra datos del usuario al desinstalar.
 - Comando: `pnpm build` (tsc + vite build + electron-builder).
 
+### Build de producción (variables de entorno)
+
+- `apps/desktop/.env.production` (gitignored) define `VITE_SUPABASE_URL` y
+  `VITE_SUPABASE_PUBLISHABLE_KEY` del proyecto remoto
+  ([[Supabase local y remoto]]); Vite las hornea en el bundle al compilar en
+  modo producción y tienen prioridad sobre `.env` (local).
+- Comando: `pnpm build` con `.env.production` presente → instalador
+  `release/0.1.0/SisyFlow-Windows-0.1.0-Setup.exe`.
+- Verificación post-build: el bundle (`dist/assets/*.js`) debe contener el
+  project-ref de producción y **no** la URL local (`127.0.0.1:45321`).
+- La versión de Electron queda **fijada** (`"electron": "30.0.1"`, sin `^`) para
+  que electron-builder resuelva el binario con el layout hoisted de pnpm.
+- Primer instalador de producción generado el 2026-09-13 (apunta a `sisyflow`
+  en us-east-1).
+
+### Deep link de autenticación (`sisyflow://`)
+
+- electron-builder registra el esquema `sisyflow` en el instalador NSIS
+  (`protocols` en `electron-builder.json5`); `electron/main.ts` además llama a
+  `app.setAsDefaultProtocolClient` (con soporte para desarrollo vía
+  `process.defaultApp`).
+- Los correos de Supabase (confirmación, recuperación) redirigen a
+  `sisyflow://auth/callback#access_token=…`; el SO abre o enfoca la app (single
+  instance) y el renderer establece la sesión con
+  `supabase.auth.setSession` (`src/auth/authCallback.ts`).
+- Requiere que el proyecto Supabase tenga el deep link como `site_url` y en la
+  allowlist de redirects ([[Supabase local y remoto]]).
+- El cliente pide `emailRedirectTo: sisyflow://auth/callback` al registrar y al
+  reenviar la confirmación.
+
 ### Requisitos / gotchas conocidos (Windows)
 
 - **Symlinks de `winCodeSign`**: el primer build puede fallar al extraer binarios

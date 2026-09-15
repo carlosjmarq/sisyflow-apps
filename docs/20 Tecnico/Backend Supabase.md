@@ -28,6 +28,11 @@ email/contraseña + RLS, consumido directo desde la app Electron con
   épicas con proyectos; tests pgTAP de jerarquía (27 en total, `supabase test db`).
 - Fase 5: migración `gamification_rpc` con `daily_epic_logs_tz` y `epic_streaks`;
   tests pgTAP de gamificación (38 en total).
+- Rediseño ([[ADR-012 Rediseno UI Material Design 3]]): migración
+  `global_streak` con `streak_global`; tests pgTAP de racha global (47 en total).
+- **Producción (2026-09-13)**: proyecto remoto `sisyflow`
+  (ref `djjttyejsbicmrvmgyep`, us-east-1) con las 4 migraciones aplicadas vía
+  `supabase link` + `supabase db push` ([[Supabase local y remoto]]).
 - Stack local en puertos 453xx por restricciones de Windows
   ([[Supabase local y remoto]]).
 
@@ -37,6 +42,11 @@ email/contraseña + RLS, consumido directo desde la app Electron con
 - **Sesión persistente en Electron**: el cliente mantiene la sesión entre
   aperturas (persistencia en almacenamiento local; verificar comportamiento con
   el esquema `file://` del build).
+- Confirmación por email activada (`enable_confirmations = true`): el enlace del
+  correo vuelve a la app por deep link (`sisyflow://auth/callback`, ver
+  [[Builds de escritorio (Windows)]]) y establece la sesión automáticamente.
+- La pantalla de login permite **reenviar el correo de confirmación** cuando el
+  error es `Email not confirmed` y avisa ante el límite de envíos de Supabase.
 - Pantalla de Login/Registro en el desktop (fase `/cloud`).
 - Al registrarse, los datos creados por el usuario llevan `user_id = auth.uid()`.
 
@@ -67,10 +77,11 @@ backend/supabase/
 
 ### Secretos
 
-- Desarrollo: `.env` (gitignored) con URL y anon key locales.
-- Desktop: variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
-  (el anon key es público por diseño, pero se maneja por entorno).
-- Producción: proyecto Supabase remoto ([[Supabase local y remoto]]).
+- Desarrollo: `.env` (gitignored) con URL y publishable key locales.
+- Desktop: variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`
+  (la publishable key es pública por diseño, pero se maneja por entorno).
+- Producción: `apps/desktop/.env.production` (gitignored) con el proyecto
+  remoto `sisyflow` ([[Supabase local y remoto]]).
 
 ### Flujo de datos desde el desktop
 
@@ -83,7 +94,8 @@ migración Sísifo (US 1.2).
 - [x] `supabase init` y primera migración (Fase 2, 2026-09-13).
 - [x] Cliente integrado en el desktop con la publishable key y sesión
       persistente (Fase 3, 2026-09-13).
-- [ ] Definir proyecto remoto de producción.
+- [x] Proyecto remoto de producción creado y migrado (2026-09-13:
+      `sisyflow`, ref `djjttyejsbicmrvmgyep`, us-east-1).
 
 ## Relaciones
 

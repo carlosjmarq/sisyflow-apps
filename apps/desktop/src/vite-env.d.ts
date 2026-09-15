@@ -8,3 +8,12 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+interface SisyflowBridge {
+  onAuthCallback(callback: (url: string) => void): () => void
+  signalAuthReady(): void
+}
+
+interface Window {
+  sisyflow?: SisyflowBridge
+}

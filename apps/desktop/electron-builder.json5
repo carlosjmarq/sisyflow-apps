@@ -7,6 +7,14 @@
   "directories": {
     "output": "release/${version}"
   },
+  "protocols": [
+    {
+      "name": "SisyFlow",
+      "schemes": [
+        "sisyflow"
+      ]
+    }
+  ],
   "files": [
     "dist",
     "dist-electron"

@@ -18,7 +18,18 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
   },
+})
 
-  // You can expose other APTs you need here.
-  // ...
+// Puente de autenticación por deep link (`sisyflow://auth/callback`).
+contextBridge.exposeInMainWorld('sisyflow', {
+  onAuthCallback(callback: (url: string) => void) {
+    const listener = (_event: unknown, url: string) => callback(url)
+    ipcRenderer.on('auth:callback', listener)
+    return () => {
+      ipcRenderer.removeListener('auth:callback', listener)
+    }
+  },
+  signalAuthReady() {
+    ipcRenderer.send('auth:ready')
+  },
 })
