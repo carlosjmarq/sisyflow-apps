@@ -13,10 +13,19 @@ Punto de entrada al vault. Toda nota nueva se enlaza aquí.
 
 ## Estado del proyecto
 
-**Fase 5 — Gamificación** completada (2026-09-13): heatmap de 365 días con filtro
-global/por épica, rachas 🔥 por épica con weekend freeze y cálculo en SQL según
-la zona horaria del cliente. Fases 0–4 previas. El roadmap de fases vive en
-[[Fases del proyecto]].
+**Fases 0–5 completas** (2026-09-13): andamiaje, desktop base, backend, nube,
+jerarquía Épica > Proyecto > Tarea y gamificación (heatmap, rachas por épica con
+weekend freeze y cálculo en SQL según la zona horaria del cliente). Sobre esa
+base se implementó el **rediseño UI Material Design 3** ([[ADR-012 Rediseno UI Material Design 3]]):
+Inicio progress-first (hero de racha, heatmap compacto expandible, chips de racha
+por épica, tareas del día y proyectos), dark mode persistido, búsqueda global y
+gestión de tags por proyecto con UI. La **Fase 6 — Entrega** (`/deliver`) está en
+curso: el backend se desplegó en el proyecto Supabase de producción `sisyflow`
+(us-east-1) y se generó el primer instalador NSIS apuntando a producción
+([[Supabase local y remoto]], [[Builds de escritorio (Windows)]]). Además se
+añadió el **CLI de SisyFlow** (`apps/cli/`, binario `sisyflow`) para automatizar
+el CRUD de épicas, proyectos y tareas desde la consola ([[ADR-013 CLI de SisyFlow]]).
+El roadmap de fases vive en [[Fases del proyecto]].
 
 ## 00 Inbox
 
@@ -36,10 +45,13 @@ la zona horaria del cliente. Fases 0–4 previas. El roadmap de fases vive en
 - [[ADR-009 Migracion Sísifo mapeo y marcador]]
 - [[ADR-010 Ciclo de vida de proyectos y vista del dia]]
 - [[ADR-011 Gamificacion zona horaria rachas y heatmap]]
+- [[ADR-012 Rediseno UI Material Design 3]]
+- [[ADR-013 CLI de SisyFlow]] — Aceptado
 
 ## 20 Tecnico
 
 - [[App de escritorio (base TodoDex)]]
+- [[CLI de SisyFlow]]
 - [[Capa de datos Supabase]]
 - [[Paridad funcional con TodoDex]]
 - [[Modelo de datos objetivo (Supabase)]]

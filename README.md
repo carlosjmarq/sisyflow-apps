@@ -16,6 +16,7 @@ TodoDex verificada. Siguiente fase: `/cloud` (cliente, login y migración Sísif
 | Ruta | Contenido |
 | --- | --- |
 | `apps/desktop/` | App Electron (React + TypeScript + Tailwind + BlockNote; Dexie solo como origen de migración) |
+| `apps/cli/` | CLI `sisyflow`: CRUD de épicas, proyectos y tareas contra Supabase (automatización) |
 | `backend/supabase/` | Backend Supabase (Postgres, Auth, RLS, migraciones, funciones) |
 | `docs/` | Vault Obsidian: fuente de verdad del proyecto (ADRs, notas técnicas, user stories, proceso) |
 | `.opencode/` | Agentes y comandos del workflow de IA |
@@ -51,3 +52,22 @@ Detalle y versiones exactas: `docs/40 Proceso/Setup y herramientas.md`.
 1. Abrir el repo con OpenCode (el `opencode.json` carga AGENTS.md y las skills del proyecto).
 2. `pnpm install` en la raíz (workspace) y `pnpm dev` para levantar la app de escritorio.
 3. Continuar con `/cloud` (fase 3) según `docs/40 Proceso/Fases del proyecto.md`.
+
+## CLI de SisyFlow
+
+`apps/cli/` expone el binario `sisyflow` para operar la capa de datos desde la
+consola (CRUD de épicas, proyectos y tareas, con login persistente y salida
+`--json`). Ver `docs/20 Tecnico/CLI de SisyFlow.md` y el ADR-013.
+
+```
+pnpm cli help                        # o: pnpm cli epic --help
+pnpm cli login                       # guarda la sesión en ~/.sisyflow
+pnpm cli epic create --name "Salud"
+pnpm cli project create --name "Rutina" --epic "Salud"
+pnpm cli todo create --title "Correr 5 km" --project "Rutina" --priority high
+pnpm cli todo list --json            # salida parseable para scripts
+pnpm cli import tareas.json          # creación masiva
+```
+
+En pnpm 9 (Windows) los argumentos van directamente tras el nombre del script
+(sin `--`): `pnpm cli --json epic list`.

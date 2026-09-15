@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "pnpm --filter sisyflow-desktop dev",
     "build": "pnpm --filter sisyflow-desktop build",
-    "lint": "pnpm --filter sisyflow-desktop lint"
+    "lint": "pnpm --filter sisyflow-desktop lint",
+    "cli": "pnpm --filter sisyflow-cli start"
   }
 }
