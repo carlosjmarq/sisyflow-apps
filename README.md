@@ -71,3 +71,7 @@ pnpm cli import tareas.json          # creación masiva
 
 En pnpm 9 (Windows) los argumentos van directamente tras el nombre del script
 (sin `--`): `pnpm cli --json epic list`.
+
+Para instalarlo como comando de sistema: `pnpm --filter sisyflow-cli build` y
+`pnpm add -g "<ruta absoluta a apps/cli>"`; la configuración se lee de
+`~/.sisyflow/.env` (ver `docs/20 Tecnico/CLI de SisyFlow.md`).

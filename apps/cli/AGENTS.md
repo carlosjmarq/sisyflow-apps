@@ -19,7 +19,7 @@ apps/cli/
 ├── src/
 │   ├── cli.ts            # programa Commander + registro de subcomandos
 │   ├── lib/
-│   │   ├── env.ts        # dotenv: process.env > apps/cli/.env > apps/desktop/.env
+│   │   ├── env.ts        # dotenv: process.env > --env-file > ~/.sisyflow/.env > .env del paquete > apps/desktop/.env
 │   │   ├── client.ts     # cliente Supabase + requireSession (login/refresh)
 │   │   ├── session.ts    # persistencia de sesión en ~/.sisyflow
 │   │   ├── resolve.ts    # resolución id|nombre (épicas/proyectos)

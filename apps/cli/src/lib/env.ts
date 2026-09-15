@@ -1,4 +1,5 @@
 import { config as loadDotenv } from 'dotenv'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fail } from './errors.js'
@@ -12,6 +13,7 @@ export interface EnvConfig {
 }
 
 const DEFAULT_ENV_FILES = [
+  path.join(os.homedir(), '.sisyflow', '.env'),
   path.join(packageRoot, '.env'),
   path.resolve(packageRoot, '..', 'desktop', '.env'),
 ]
@@ -30,8 +32,9 @@ export function getEnv(): EnvConfig {
 
   if (!url || !publishableKey) {
     fail(
-      'Faltan SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY. Configúralas en apps/cli/.env, ' +
-        'en apps/desktop/.env o con variables de entorno (ver apps/cli/.env.example).',
+      'Faltan SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY. Configúralas en ~/.sisyflow/.env, ' +
+        'en apps/cli/.env, en apps/desktop/.env o con variables de entorno ' +
+        '(ver apps/cli/.env.example).',
     )
   }
   return { url, publishableKey }
