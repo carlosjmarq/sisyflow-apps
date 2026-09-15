@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { ToastContext, type ToastKind } from './ToastContext'
+import { Icon } from './Icon'
 
 interface ToastItem {
   id: number
@@ -24,17 +25,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none">
+      <div className="pointer-events-none fixed bottom-4 left-4 z-[100] flex w-[min(420px,calc(100vw-32px))] flex-col gap-2">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-4 py-3 rounded-2xl shadow-soft-lg border text-sm font-medium transition-all ${
-              toast.kind === 'error'
-                ? 'bg-coral border-coral-dark text-nintendo-text'
-                : 'bg-mint border-mint-dark text-nintendo-text'
-            }`}
+            role="status"
+            className="pointer-events-auto flex animate-snackbar-in items-center gap-3 rounded-xs bg-inverse-surface px-4 py-3 text-body-medium text-inverse-on-surface shadow-elev-3"
           >
-            {toast.message}
+            <Icon
+              name={toast.kind === 'error' ? 'error' : 'check_circle'}
+              size={20}
+              className="shrink-0 text-inverse-primary"
+            />
+            <span className="min-w-0 break-words">{toast.message}</span>
           </div>
         ))}
       </div>

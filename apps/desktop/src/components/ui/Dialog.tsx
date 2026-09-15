@@ -27,7 +27,7 @@ export const DialogOverlay = React.forwardRef<
   return (
     <DialogPrimitive.Overlay
       ref={ref}
-      className={`fixed inset-0 z-40 bg-nintendo-text/20 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 ${className}`}
+      className={`fixed inset-0 z-40 bg-scrim/32 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out ${className}`}
       {...props}
     />
   )
@@ -42,10 +42,12 @@ export const DialogContent = React.forwardRef<
       <DialogOverlay />
       <DialogPrimitive.Content
         ref={ref}
-        className={`fixed z-50 bg-nintendo-card rounded-3xl shadow-soft-lg border border-nintendo-border/60 p-6 w-[90vw] max-w-md max-h-[85vh] overflow-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 ${className}`}
+        className={`fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-[560px] -translate-x-1/2 -translate-y-1/2 focus:outline-none data-[state=open]:animate-dialog-in data-[state=closed]:animate-dialog-out ${className}`}
         {...props}
       >
-        {children}
+        <div className="max-h-[85vh] overflow-y-auto rounded-xl bg-surface-container-high p-6 shadow-elev-3">
+          {children}
+        </div>
       </DialogPrimitive.Content>
     </DialogPortal>
   )
@@ -58,7 +60,7 @@ export const DialogTitle = React.forwardRef<
   return (
     <DialogPrimitive.Title
       ref={ref}
-      className={`text-lg font-bold text-nintendo-text ${className}`}
+      className={`text-headline-small text-on-surface ${className}`}
       {...props}
     />
   )
@@ -71,11 +73,15 @@ export const DialogDescription = React.forwardRef<
   return (
     <DialogPrimitive.Description
       ref={ref}
-      className={`text-sm text-nintendo-muted ${className}`}
+      className={`text-body-medium text-on-surface-variant ${className}`}
       {...props}
     />
   )
 })
+
+export function DialogActions({ className = '', ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={`mt-6 flex justify-end gap-2 ${className}`} {...props} />
+}
 
 export const DialogClose = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Close>,

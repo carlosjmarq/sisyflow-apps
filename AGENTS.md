@@ -18,7 +18,7 @@ vault (`docs/`, ver `[[00 Inbox/MOC]]`).
 
 | Ruta | Contenido |
 | --- | --- |
-| `apps/desktop/` | App Electron (React + TypeScript + Tailwind + BlockNote; Dexie solo como origen de migración) |
+| `apps/desktop/` | App Electron (React + TypeScript + Tailwind + BlockNote; Dexie solo como origen de migración; UI Material Design 3, ADR-012) |
 | `backend/supabase/` | Backend Supabase (Postgres, Auth, RLS, migraciones, funciones) |
 | `docs/` | Vault Obsidian (fuente de verdad: ADRs, notas técnicas, user stories) |
 | `.opencode/` | Agentes y comandos del workflow IA |
@@ -76,8 +76,9 @@ la UI de inmediato y revierte con aviso si la red falla (US 1.3). Ver
 ## Convenciones de código
 
 - Desktop: Electron 30 + Vite 5 + React 18 + TypeScript estricto + Tailwind 3 +
-  BlockNote/Mantine. pnpm con `node-linker=hoisted`. Sin store global: hooks +
-  capa de datos.
+  BlockNote/Mantine, con tokens Material Design 3 (ADR-012) y animación `motion`
+  más iconos `material-symbols`. pnpm con `node-linker=hoisted`. Sin store
+  global: hooks + capa de datos.
 - Backend: Supabase (Postgres + Auth email/contraseña + RLS). Migraciones vía
   CLI; tipos TypeScript generados para el desktop. `service_role` jamás en la app.
 - Todo acceso a datos desde la app pasa por RLS `auth.uid() = user_id` (US 1.1).

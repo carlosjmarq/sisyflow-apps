@@ -1,8 +1,12 @@
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogTitle, Input, Button } from './ui'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from './ui'
 import type { NewTodoInput } from '../hooks/useProjects'
 
-export function TodoForm({ open, onOpenChange, onCreate }: {
+export function TodoForm({
+  open,
+  onOpenChange,
+  onCreate,
+}: {
   open: boolean
   onOpenChange: (open: boolean) => void
   onCreate: (todo: NewTodoInput) => void
@@ -27,25 +31,25 @@ export function TodoForm({ open, onOpenChange, onCreate }: {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-[480px]">
         <DialogTitle>Nueva tarea</DialogTitle>
-        <div className="flex flex-col gap-4 mt-4">
-          <Input
+        <div className="mt-4 flex flex-col gap-4">
+          <TextField
             label="Título"
+            labelBgClass="bg-surface-container-high"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Nombre de la tarea..."
+            onChange={(event) => setTitle(event.target.value)}
             autoFocus
-            onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+            onKeyDown={(event) => event.key === 'Enter' && handleCreate()}
           />
-          <div className="flex gap-3 justify-end mt-2">
-            <Button variant="secondary" onClick={() => onOpenChange(false)}>
+          <DialogActions>
+            <Button variant="text" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button variant="primary" onClick={handleCreate} disabled={!title.trim()}>
+            <Button variant="filled" onClick={handleCreate} disabled={!title.trim()}>
               Crear tarea
             </Button>
-          </div>
+          </DialogActions>
         </div>
       </DialogContent>
     </Dialog>

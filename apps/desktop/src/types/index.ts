@@ -52,18 +52,38 @@ export const URGENCY_LABELS: Record<Urgency, string> = {
 }
 
 export const PROJECT_COLORS = [
-  { value: 'mint', label: 'Mint', bg: '#C7F9CC', ring: 'ring-mint-dark' },
-  { value: 'coral', label: 'Coral', bg: '#FFC6D9', ring: 'ring-coral-dark' },
-  { value: 'lavender', label: 'Lavanda', bg: '#D8D5F9', ring: 'ring-lavender-dark' },
-  { value: 'peach', label: 'Durazno', bg: '#FFE5D9', ring: 'ring-peach-dark' },
-  { value: 'sky', label: 'Cielo', bg: '#BDE0FE', ring: 'ring-sky-dark' },
-  { value: 'butter', label: 'Mantequilla', bg: '#FFF9C4', ring: 'ring-butters-dark' },
+  { value: 'violeta', label: 'Violeta', bg: '#6750A4' },
+  { value: 'azul', label: 'Azul', bg: '#1E88E5' },
+  { value: 'teal', label: 'Teal', bg: '#00897B' },
+  { value: 'verde', label: 'Verde', bg: '#43A047' },
+  { value: 'ambar', label: 'Ámbar', bg: '#FFB300' },
+  { value: 'naranja', label: 'Naranja', bg: '#FB8C00' },
+  { value: 'rojo', label: 'Rojo', bg: '#E53935' },
+  { value: 'rosa', label: 'Rosa', bg: '#D81B60' },
+  { value: 'purpura', label: 'Púrpura', bg: '#8E24AA' },
+  { value: 'grafito', label: 'Grafito', bg: '#546E7A' },
 ] as const
 
-export const DEFAULT_HEX = '#C7F9CC'
+export const DEFAULT_HEX = '#6750A4'
+
+const LEGACY_PALETTE: Record<string, string> = {
+  mint: '#C7F9CC',
+  coral: '#FFC6D9',
+  lavender: '#D8D5F9',
+  peach: '#FFE5D9',
+  sky: '#BDE0FE',
+  butter: '#FFF9C4',
+}
 
 export function paletteHex(colorOrHex: string): string {
-  return PROJECT_COLORS.find((c) => c.value === colorOrHex)?.bg ?? colorOrHex
+  return PROJECT_COLORS.find((c) => c.value === colorOrHex)?.bg ?? LEGACY_PALETTE[colorOrHex] ?? colorOrHex
+}
+
+export const PRIORITY_COLORS: Record<Priority, string> = {
+  low: '#81C995',
+  medium: '#FDD663',
+  high: '#FCAD70',
+  critical: '#F28B82',
 }
 
 export interface Todo {
@@ -81,7 +101,7 @@ export interface Todo {
   completedAt?: Date | null
 }
 
-export type TagColor = typeof PROJECT_COLORS[number]['value']
+export type TagColor = string
 
 export interface Tag {
   id: string
@@ -94,15 +114,15 @@ export type TodoSortKey = 'createdAt' | 'updatedAt' | 'priority' | 'status' | 't
 export type ProjectSortKey = 'createdAt' | 'name'
 
 export const TODO_SORT_OPTIONS: { value: TodoSortKey; label: string }[] = [
-  { value: 'createdAt', label: 'Fecha de creacion' },
-  { value: 'updatedAt', label: 'Ultima modificacion' },
+  { value: 'createdAt', label: 'Fecha de creación' },
+  { value: 'updatedAt', label: 'Última modificación' },
   { value: 'priority', label: 'Prioridad' },
   { value: 'status', label: 'Estado' },
-  { value: 'title', label: 'Alfabetico' },
-  { value: 'expirationDate', label: 'Fecha de expiracion' },
+  { value: 'title', label: 'Alfabético' },
+  { value: 'expirationDate', label: 'Fecha de expiración' },
 ]
 
 export const PROJECT_SORT_OPTIONS: { value: ProjectSortKey; label: string }[] = [
-  { value: 'createdAt', label: 'Fecha de creacion' },
-  { value: 'name', label: 'Alfabetico' },
+  { value: 'createdAt', label: 'Fecha de creación' },
+  { value: 'name', label: 'Alfabético' },
 ]

@@ -49,12 +49,14 @@ en cada fase.
 - [x] Los datos existentes se migran a Épicas top-level en la fase `/hierarchy`
       ([[ADR-007 Jerarquia Epicas Proyectos Tareas]]); el dato no se pierde.
 
-### Tags y búsqueda (capacidad sin UI)
+### Tags y búsqueda
 
-- [x] CRUD de tags por proyecto (`useProjectTags`) — existe en la capa de datos,
-      sin uso en la UI actual. Se conserva la capacidad.
-- [x] Búsqueda de tareas por título con debounce (`useSearchTodos`) — existe en
-      la capa de datos, sin uso en la UI actual. Se conserva la capacidad.
+- [x] CRUD de tags por proyecto (`useProjectTags`) — expuesto en la UI: chips y
+      gestor de tags en la pantalla de proyecto. Sin cambios de esquema (los tags
+      son por proyecto); ver [[ADR-012 Rediseno UI Material Design 3]].
+- [x] Búsqueda de tareas por título con debounce (`useSearchTodos`) — expuesta en
+      la UI: búsqueda global en el top app bar que navega al proyecto y abre el
+      drawer de la tarea ([[ADR-012 Rediseno UI Material Design 3]]).
 
 ### Backup
 
@@ -71,8 +73,10 @@ en cada fase.
 
 ### Look & feel
 
-- [x] Estética pastel "Nintendo OS", tipografía M PLUS Rounded 1c,
-      colores de proyecto y sombras suaves.
+- [x] Estética Material Design 3 (tokens MD3, light/dark con toggle, iconos
+      Material Symbols Rounded, tipografía M PLUS Rounded 1c en escala MD3,
+      state layers y animaciones MD3). Supersede la estética pastel "Nintendo OS"
+      ([[ADR-012 Rediseno UI Material Design 3]]).
 - [x] Tooltip que solo aparece cuando el texto está truncado.
 - [x] Diálogos de confirmación para acciones destructivas.
 
@@ -90,6 +94,11 @@ en cada fase.
       lint/typecheck/build verdes y E2E completo (heatmap de 365 días, filtro
       global/por épica, racha en vivo +1 y reglas de fin de semana cubiertas
       por tests).
+- [x] Regresión del rediseño UI Material Design 3 ([[ADR-012 Rediseno UI Material Design 3]],
+      2026-09-13): lint, typecheck y build verdes; 47 tests pgTAP (38 previos +
+      9 de racha global); E2E manual en light y dark (login, dashboard con racha
+      reactiva al completar una tarea, heatmap compacto/expandido, búsqueda con
+      deep-link al drawer de la tarea, tags y migración Sísifo).
 
 ### Hallazgos de la Fase 5
 

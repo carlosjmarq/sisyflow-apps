@@ -220,6 +220,13 @@ export type Database = {
           epic_id: string
         }[]
       }
+      streak_global: {
+        Args: { p_today?: string; p_tz?: string }
+        Returns: {
+          best_streak: number
+          current_streak: number
+        }[]
+      }
     }
     Enums: {
       project_status: "active" | "paused" | "completed"

@@ -54,11 +54,24 @@ backlog ([[US's for personal development project]]) y depende del modelo
   (`security invoker`, ejecutables solo por `authenticated`).
 - Rachas calculadas en SQL con las reglas de US 3.3/3.4; `p_today` permite tests
   deterministas con pgTAP (11 aserciones de gamificación, 38 en total).
-- Pantalla **Progreso** (`/progress`): heatmap de 365 días con selector
-  "Vista global" / por épica y tarjetas de racha (🔥 actual + mejor marca),
-  ordenadas por racha actual.
+- La pantalla Progreso existió en Fase 5 y fue absorbida por Inicio en el
+  rediseño ([[ADR-012 Rediseno UI Material Design 3]]).
 - Heatmap propio (`Heatmap.tsx`), sin dependencias: 4 niveles de intensidad,
   color base de la épica, etiquetas de mes y tooltip por día.
+
+### Racha global e Inicio progress-first (ADR-012)
+
+- RPC `streak_global(p_tz, p_today)`: racha agregada de todas las épicas, con las
+  mismas reglas de weekend freeze que `epic_streaks`, `security invoker` y
+  ejecutable solo por `authenticated`.
+- El **hero de racha** en Inicio sigue el filtro del heatmap: muestra la racha
+  global o la de la épica seleccionada.
+- Heatmap **compacto (~18 semanas)** con expansión in-place al año completo.
+- **Chips horizontales** de racha por épica, que preservan la comparación de la
+  antigua pantalla `/progress`.
+- La ruta `/progress` se eliminó: su contenido se integró a Inicio.
+- Migración `20260913224500_global_streak.sql`; 9 tests pgTAP nuevos (47 en total).
+  Ver [[ADR-012 Rediseno UI Material Design 3]].
 
 ### Decisiones tomadas
 

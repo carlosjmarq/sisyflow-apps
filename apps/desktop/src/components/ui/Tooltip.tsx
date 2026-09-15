@@ -1,13 +1,38 @@
 import * as React from 'react'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { useRef, useState } from 'react'
 
 interface TooltipProps {
+  content: React.ReactNode
+  children: React.ReactElement
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  className?: string
+}
+
+export function Tooltip({ content, children, side = 'top', className = '' }: TooltipProps) {
+  return (
+    <TooltipPrimitive.Root>
+      <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+      <TooltipPrimitive.Portal>
+        <TooltipPrimitive.Content
+          side={side}
+          sideOffset={6}
+          className={`z-[80] max-w-[320px] break-words rounded-xs bg-inverse-surface px-2.5 py-1.5 text-label-medium text-inverse-on-surface shadow-elev-1 data-[state=delayed-open]:animate-fade-in ${className}`}
+        >
+          {content}
+        </TooltipPrimitive.Content>
+      </TooltipPrimitive.Portal>
+    </TooltipPrimitive.Root>
+  )
+}
+
+interface TruncatedTooltipProps {
   content: string
   children: React.ReactNode
   className?: string
 }
 
-export function Tooltip({ content, children, className = '' }: TooltipProps) {
+export function TruncatedTooltip({ content, children, className = '' }: TruncatedTooltipProps) {
   const innerRef = useRef<HTMLDivElement>(null)
   const [show, setShow] = useState(false)
 
@@ -28,8 +53,8 @@ export function Tooltip({ content, children, className = '' }: TooltipProps) {
         {children}
       </div>
       <div
-        className={`absolute top-full left-1/2 -translate-x-1/2 mt-1.5 z-[70] max-w-[320px] px-2.5 py-1.5 rounded-lg bg-nintendo-text text-white text-xs font-medium shadow-soft-md pointer-events-none break-words transition-opacity duration-150 ${
-          show ? 'opacity-100 delay-300' : 'opacity-0 invisible delay-0'
+        className={`pointer-events-none absolute left-1/2 top-full z-[70] mt-1.5 max-w-[320px] -translate-x-1/2 break-words rounded-xs bg-inverse-surface px-2.5 py-1.5 text-label-medium text-inverse-on-surface shadow-elev-1 transition-opacity duration-150 ${
+          show ? 'opacity-100 delay-300' : 'invisible opacity-0 delay-0'
         }`}
       >
         {content}

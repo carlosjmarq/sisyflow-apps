@@ -90,7 +90,10 @@ Pausar/completar oculta tareas incompletas del día a día sin borrar historial.
   zona horaria del cliente (fallback UTC).
 - `epic_streaks(p_tz text, p_today date)` — racha actual y mejor marca por épica
   con weekend freeze; `p_today` existe para tests.
-- Ambas `security invoker`; `execute` solo para `authenticated`.
+- `streak_global(p_tz text, p_today date)` — racha agregada de todas las épicas
+  con las mismas reglas de weekend freeze; misma seguridad y permisos que las
+  anteriores ([[ADR-012 Rediseno UI Material Design 3]]).
+- Las tres `security invoker`; `execute` solo para `authenticated`.
 
 ### RLS
 

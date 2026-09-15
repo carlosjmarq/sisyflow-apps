@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from './Dialog'
 import { Button } from './Button'
-import { AlertTriangle } from 'lucide-react'
+import { Icon } from './Icon'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -23,26 +23,26 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <div className="flex flex-col items-center text-center gap-3">
-          <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
-            variant === 'danger' ? 'bg-coral/60' : 'bg-butter/60'
-          }`}>
-            <AlertTriangle className={`w-7 h-7 ${
-              variant === 'danger' ? 'text-coral-dark' : 'text-butter-dark'
-            }`} />
+      <DialogContent className="max-w-[440px]">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-full ${
+              variant === 'danger'
+                ? 'bg-error-container text-on-error-container'
+                : 'bg-primary-container text-on-primary-container'
+            }`}
+          >
+            <Icon name="warning" size={24} />
           </div>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className="text-sm leading-relaxed">
-            {description}
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </div>
-        <div className="flex gap-3 justify-center mt-6">
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>
+        <div className="mt-6 flex justify-center gap-2">
+          <Button variant="text" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
           <Button
-            variant="coral"
+            variant={variant === 'danger' ? 'danger' : 'filled'}
             onClick={() => {
               onConfirm()
               onOpenChange(false)

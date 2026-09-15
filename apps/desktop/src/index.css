@@ -3,14 +3,116 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: light;
+
+    --md-primary: 103 80 164;
+    --md-on-primary: 255 255 255;
+    --md-primary-container: 234 221 255;
+    --md-on-primary-container: 33 0 93;
+    --md-secondary: 98 91 113;
+    --md-on-secondary: 255 255 255;
+    --md-secondary-container: 232 222 248;
+    --md-on-secondary-container: 29 25 43;
+    --md-tertiary: 125 82 96;
+    --md-on-tertiary: 255 255 255;
+    --md-tertiary-container: 255 216 228;
+    --md-on-tertiary-container: 49 17 29;
+    --md-error: 179 38 30;
+    --md-on-error: 255 255 255;
+    --md-error-container: 249 222 220;
+    --md-on-error-container: 65 14 11;
+    --md-background: 254 247 255;
+    --md-on-background: 29 27 32;
+    --md-surface: 254 247 255;
+    --md-on-surface: 29 27 32;
+    --md-surface-variant: 231 224 236;
+    --md-on-surface-variant: 73 69 79;
+    --md-surface-dim: 222 216 225;
+    --md-surface-bright: 254 247 255;
+    --md-surface-container-lowest: 255 255 255;
+    --md-surface-container-low: 247 242 250;
+    --md-surface-container: 243 237 247;
+    --md-surface-container-high: 236 230 240;
+    --md-surface-container-highest: 230 224 233;
+    --md-outline: 121 116 126;
+    --md-outline-variant: 202 196 208;
+    --md-inverse-surface: 50 47 53;
+    --md-inverse-on-surface: 245 239 247;
+    --md-inverse-primary: 208 188 255;
+    --md-scrim: 0 0 0;
+  }
+
+  .dark {
+    color-scheme: dark;
+
+    --md-primary: 208 188 255;
+    --md-on-primary: 56 30 114;
+    --md-primary-container: 79 55 139;
+    --md-on-primary-container: 234 221 255;
+    --md-secondary: 204 194 220;
+    --md-on-secondary: 51 45 65;
+    --md-secondary-container: 74 68 88;
+    --md-on-secondary-container: 232 222 248;
+    --md-tertiary: 239 184 200;
+    --md-on-tertiary: 73 37 50;
+    --md-tertiary-container: 99 59 72;
+    --md-on-tertiary-container: 255 216 228;
+    --md-error: 242 184 181;
+    --md-on-error: 96 20 16;
+    --md-error-container: 140 29 24;
+    --md-on-error-container: 249 222 220;
+    --md-background: 20 18 24;
+    --md-on-background: 230 224 233;
+    --md-surface: 20 18 24;
+    --md-on-surface: 230 224 233;
+    --md-surface-variant: 73 69 79;
+    --md-on-surface-variant: 202 196 208;
+    --md-surface-dim: 20 18 24;
+    --md-surface-bright: 59 56 62;
+    --md-surface-container-lowest: 15 13 19;
+    --md-surface-container-low: 29 27 32;
+    --md-surface-container: 33 31 38;
+    --md-surface-container-high: 43 41 48;
+    --md-surface-container-highest: 54 52 59;
+    --md-outline: 147 143 153;
+    --md-outline-variant: 73 69 79;
+    --md-inverse-surface: 230 224 233;
+    --md-inverse-on-surface: 50 47 53;
+    --md-inverse-primary: 103 80 164;
+    --md-scrim: 0 0 0;
+  }
+
   * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html,
   body {
-    @apply bg-nintendo-bg text-nintendo-text font-sans;
+    height: 100%;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-sans;
     user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable='true'],
+  .selectable {
+    user-select: text;
+  }
+
+  ::selection {
+    background-color: rgb(var(--md-primary-container));
+    color: rgb(var(--md-on-primary-container));
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--md-primary));
+    outline-offset: 2px;
   }
 
   ::-webkit-scrollbar {
@@ -23,75 +125,121 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-nintendo-muted/30 rounded-full;
+    background-color: rgb(var(--md-outline-variant));
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-nintendo-muted/50;
+    background-color: rgb(var(--md-outline));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
 @layer components {
-  .pill {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+  .state-layer {
+    position: relative;
+    overflow: hidden;
   }
 
-  .nintendo-card {
-    @apply bg-nintendo-card rounded-3xl shadow-soft border border-nintendo-border/60 transition-all duration-200;
+  .state-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    transition: opacity 100ms cubic-bezier(0.2, 0, 0, 1);
+    pointer-events: none;
   }
 
-  .nintendo-card:hover {
-    @apply shadow-soft-md -translate-y-1;
+  .state-layer:hover::after {
+    opacity: 0.08;
   }
 
-  .nintendo-card:active {
-    @apply shadow-nintendo-active translate-y-0.5;
+  .state-layer:focus-visible::after {
+    opacity: 0.1;
   }
 
-  .nintendo-input {
-    @apply w-full px-4 py-3 rounded-2xl bg-nintendo-bg border-2 border-nintendo-border
-           text-nintendo-text placeholder-nintendo-muted
-           focus:outline-none focus:border-lavender focus:bg-white
-           transition-colors duration-200;
+  .state-layer:active::after {
+    opacity: 0.1;
   }
 
-  .nintendo-btn {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl
-           font-semibold text-sm transition-all duration-200
-           shadow-nintendo active:shadow-nintendo-active active:translate-y-0.5
-           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0
-           disabled:active:shadow-nintendo;
+  .state-layer:disabled::after,
+  .state-layer[aria-disabled='true']::after {
+    opacity: 0;
   }
 
-  .nintendo-btn-primary {
-    @apply nintendo-btn bg-lavender hover:bg-lavender-dark text-nintendo-text;
+  .state-layer-on-surface::after {
+    background-color: rgb(var(--md-on-surface));
   }
 
-  .nintendo-btn-secondary {
-    @apply nintendo-btn bg-nintendo-bg border-2 border-nintendo-border text-nintendo-text hover:bg-white;
+  .state-layer-primary::after {
+    background-color: rgb(var(--md-primary));
   }
 
-  .nintendo-btn-mint {
-    @apply nintendo-btn bg-mint hover:bg-mint-dark text-nintendo-text;
+  .skeleton {
+    @apply relative overflow-hidden bg-surface-container-highest rounded-md;
   }
 
-  .nintendo-btn-coral {
-    @apply nintendo-btn bg-coral hover:bg-coral-dark text-nintendo-text;
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--md-on-surface) / 0.06),
+      transparent
+    );
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 
 @layer base {
   .bn-container {
-    --bn-colors-editor-text: #4A4550;
-    --bn-colors-editor-background: #FFFFFF;
-    --bn-colors-hovered-background: #D8D5F980;
-    --bn-colors-selected-background: #C7F9CC80;
-    --bn-radius-medium: 0.75rem;
+    --bn-colors-editor-text: rgb(var(--md-on-surface));
+    --bn-colors-editor-background: rgb(var(--md-surface-container-low));
+    --bn-colors-menu-text: rgb(var(--md-on-surface));
+    --bn-colors-menu-background: rgb(var(--md-surface-container));
+    --bn-colors-tooltip-text: rgb(var(--md-inverse-on-surface));
+    --bn-colors-tooltip-background: rgb(var(--md-inverse-surface));
+    --bn-colors-hovered-text: rgb(var(--md-on-surface));
+    --bn-colors-hovered-background: rgb(var(--md-surface-container-high) / 0.8);
+    --bn-colors-selected-text: rgb(var(--md-on-surface));
+    --bn-colors-selected-background: rgb(var(--md-primary-container) / 0.6);
+    --bn-colors-disabled-text: rgb(var(--md-on-surface) / 0.38);
+    --bn-colors-disabled-background: rgb(var(--md-surface-variant) / 0.5);
+    --bn-colors-border: rgb(var(--md-outline-variant));
+    --bn-colors-side-menu: rgb(var(--md-outline));
+    --bn-radius-medium: 12px;
   }
 
   .bn-container .bn-editor {
     font-family: "M PLUS Rounded 1c", system-ui, -apple-system, sans-serif;
     font-size: 14px;
     line-height: 1.6;
+    padding-inline: 0;
+  }
+
+  .bn-container [data-content-type='paragraph'] {
+    padding-inline: 0;
   }
 }

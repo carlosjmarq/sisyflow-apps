@@ -43,10 +43,10 @@ Supabase es la fuente de verdad; Dexie queda solo como origen de la migración.
 | `useProjects()` | `projects` con `epics(...)` y `todos(count)` en una sola consulta | crear/editar/borrar con optimista + reversión |
 | `useProjectTodos(projectId, sortBy)` | `todos` del proyecto (orden en cliente, como antes) | crear/editar/borrar con optimista + reversión |
 | `useEpics()` | todas las épicas | CRUD completo (pantalla `/epics`) |
-| `useProjectTags(projectId)` | tags del proyecto | CRUD (sin UI aún; capacidad de paridad) |
-| `useSearchTodos(query)` | `ilike` sobre título con debounce | — |
+| `useProjectTags(projectId)` | tags del proyecto | CRUD con UI (ADR-012) |
+| `useSearchTodos(query)` | `ilike` sobre título con debounce | búsqueda global con UI (ADR-012) |
 | `useDayTodos()` | tareas pendientes de proyectos activos con proyecto/épica embebidos | — (vista "Tareas del día", ADR-010) |
-| `useGamification(days)` | RPC `daily_epic_logs_tz` + `epic_streaks` con la zona horaria del cliente | — (pantalla Progreso, ADR-011) |
+| `useGamification(days)` | RPC `daily_epic_logs_tz` + `epic_streaks` y `streak_global` con la zona horaria del cliente | — (Inicio progress-first, ADR-011/ADR-012) |
 
 Patrón de mutación:
 

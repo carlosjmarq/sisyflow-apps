@@ -15,6 +15,11 @@ export interface EpicStreak {
   best: number
 }
 
+export interface GlobalStreak {
+  current: number
+  best: number
+}
+
 function clientTimeZone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
@@ -32,18 +37,20 @@ export function useGamification(days = 365) {
   const { showToast } = useToast()
   const [logs, setLogs] = useState<DailyLog[]>([])
   const [streaks, setStreaks] = useState<EpicStreak[]>([])
+  const [globalStreak, setGlobalStreak] = useState<GlobalStreak>({ current: 0, best: 0 })
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     if (!user) return
     const tz = clientTimeZone()
-    const [logsRes, streaksRes] = await Promise.all([
+    const [logsRes, streaksRes, globalRes] = await Promise.all([
       supabase.rpc('daily_epic_logs_tz', { p_tz: tz, p_days: days }),
       supabase.rpc('epic_streaks', { p_tz: tz }),
+      supabase.rpc('streak_global', { p_tz: tz }),
     ])
 
-    if (logsRes.error || streaksRes.error) {
-      console.error(logsRes.error ?? streaksRes.error)
+    if (logsRes.error || streaksRes.error || globalRes.error) {
+      console.error(logsRes.error ?? streaksRes.error ?? globalRes.error)
       showToast('No se pudieron cargar las estadísticas')
       setLoading(false)
       return
@@ -59,6 +66,11 @@ export function useGamification(days = 365) {
       current: row.current_streak ?? 0,
       best: row.best_streak ?? 0,
     })))
+    const globalRow = (globalRes.data ?? [])[0]
+    setGlobalStreak({
+      current: globalRow?.current_streak ?? 0,
+      best: globalRow?.best_streak ?? 0,
+    })
     setLoading(false)
   }, [user, showToast, days])
 
@@ -66,5 +78,5 @@ export function useGamification(days = 365) {
     load()
   }, [load])
 
-  return { logs, streaks, loading, reload: load }
+  return { logs, streaks, globalStreak, loading, reload: load }
 }

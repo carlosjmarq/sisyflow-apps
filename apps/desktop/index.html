@@ -8,8 +8,15 @@
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="/icon.png" />
     <title>SisyFlow</title>
+    <script>
+      try {
+        var stored = localStorage.getItem('sisyflow.theme')
+        var dark = stored === 'dark' || ((!stored || stored === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        if (dark) document.documentElement.classList.add('dark')
+      } catch (e) {}
+    </script>
   </head>
-  <body class="bg-nintendo-bg text-nintendo-text font-sans antialiased">
+  <body class="bg-surface text-on-surface font-sans antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

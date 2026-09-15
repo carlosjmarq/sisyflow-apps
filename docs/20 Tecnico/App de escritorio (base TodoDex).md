@@ -36,25 +36,48 @@ SisyFlow el 2026-09-13 ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
 - **Fase 5**: pantalla Progreso (`/progress`) con heatmap de 365 días (global o
   por épica) y rachas 🔥 por épica
   ([[ADR-011 Gamificacion zona horaria rachas y heatmap]]).
+- **Rediseño UI Material Design 3** ([[ADR-012 Rediseno UI Material Design 3]]):
+  shell con navigation rail (Inicio/Épicas/Ajustes), top app bar contextual, FAB
+  y snackbar; Inicio progress-first (hero de racha, heatmap compacto expandible,
+  chips de racha por épica, tareas del día y proyectos); se elimina la ruta
+  `/progress` (absorbida por Inicio); búsqueda global y tags por proyecto con UI;
+  tema claro/oscuro persistido. (Fase 6 `/deliver` aún pendiente.)
 
 ### Arquitectura
 
 - **Electron 30 + Vite 5** (`vite-plugin-electron/simple`): `electron/main.ts`
   (ventana + carga del dev server o `dist/index.html`) y `electron/preload.ts`
   (expone `ipcRenderer` genérico por `contextBridge`; el renderer no usa IPC hoy).
-- **React 18 + TypeScript estricto**, router `react-router-dom` 7 en modo HashRouter:
-  - `/` — Home: grid responsive (1–4 columnas) de proyectos, orden, export/import de backup.
+  La ventana arranca en 1280x840 con mínimo 960x640 y `backgroundColor` acorde al
+  tema activo para evitar el destello blanco.
+- **React 18 + TypeScript estricto**, router `react-router-dom` 7 en modo HashRouter.
+  El shell ([[ADR-012 Rediseno UI Material Design 3]]) define el navigation rail
+  con tres destinos:
+  - `/` — Inicio progress-first (orden fijo): hero de racha, heatmap compacto
+    expandible, chips de racha por épica, tareas del día y proyectos agrupados por
+    épica. Absorbe el progreso; la ruta `/progress` se eliminó.
+  - `/epics` — Épicas: CRUD y color.
   - `/project/:projectId` — TodoList: toolbar de orden y filtros, secciones
-    Pendientes/Completados/Cancelados, drawer de detalle.
-- **Sin store global**: hooks locales (`src/hooks/useProjects.ts`) sobre Dexie que
-  recargan datos tras cada mutación.
+    Pendientes/Completados/Cancelados, drawer de detalle y gestor de tags.
+  - `/settings` — Ajustes: tema, cuenta, migración Sísifo y backup.
+- **Sin store global**: hooks sobre Supabase con UI optimista
+  ([[Capa de datos Supabase]]); los componentes no importan el cliente.
 - **Datos locales**: `src/db/database.ts` (Dexie 4, base `TodoDexDB`, versión 4)
-  con tablas `projects`, `todos`, `epics`, `tags`; `src/db/backup.ts` export/import JSON.
+  se conserva únicamente como origen de la migración Sísifo;
+  `src/db/backup.ts` export/import JSON.
 - **Editor**: BlockNote + Mantine 8 ([[Editor de contenido (BlockNote)]]).
 - **Tipos y dominio**: `src/types/index.ts` (estados, prioridades, urgencias,
   colores de proyecto).
-- **UI primitivas**: `src/components/ui/` (Button, Card, Dialog, ConfirmDialog,
-  Input, Select, Tooltip).
+- **Tema**: `src/theme/` (`ThemeProvider`, `ThemeContext`) con preferencia
+  persistida y toggle claro/oscuro.
+- **Shell**: `src/components/shell/` (`AppShell`, `NavigationRail`, `TopAppBar`,
+  `SearchOverlay`, `ShellContext`).
+- **UI primitivas**: `src/components/ui/` (Button, IconButton, Fab, Card, Chip,
+  SegmentedButton, TextField, Select, Dialog, ConfirmDialog, Menu, Tooltip,
+  Skeleton/Spinner, ColorPicker, Icon; snackbar vía `ToastProvider`). El drawer de
+  detalle se portaliza a `document.body`.
+- **Dependencias UI**: `motion` (animaciones MD3) y `material-symbols`
+  (iconografía Rounded auto-hospedada); se retira `lucide-react`.
 
 ### Funcionalidad actual
 

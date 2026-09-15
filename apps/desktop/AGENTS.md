@@ -9,7 +9,9 @@ App de escritorio de SisyFlow. Parte del monorepo `sisyflow-apps` ([[ADR-002 Mon
 ## Stack
 
 - Electron 30 + Vite 5 (`vite-plugin-electron`, `vite-plugin-electron-renderer`)
-- React 18 + TypeScript estricto + Tailwind CSS 3 (estética pastel "Nintendo OS")
+- React 18 + TypeScript estricto + Tailwind CSS 3 con tokens Material Design 3
+  (light/dark, [[ADR-012 Rediseno UI Material Design 3]])
+- Animación con `motion` e iconos `material-symbols` (Rounded, auto-hospedados)
 - Editor de contenido: BlockNote + Mantine 8 ([[Editor de contenido (BlockNote)]])
 - Datos: Supabase nube-first con UI optimista ([[Capa de datos Supabase]]);
   Dexie 4 queda solo como origen de la migración Sísifo
@@ -28,12 +30,14 @@ apps/desktop/
 ├── src/
 │   ├── auth/          # AuthProvider, AuthScreen (Supabase auth)
 │   ├── components/    # UI: listas, formularios, drawer, editor, Settings
+│   │   ├── shell/     # AppShell, NavigationRail, TopAppBar, SearchOverlay, ShellContext
 │   │   └── ui/        # primitivas (Button, Card, Dialog, Select, Toast...)
 │   ├── data/          # mappers fila ↔ dominio
 │   ├── db/            # database.ts (Dexie legacy), backup.ts (v3)
 │   ├── hooks/         # hooks de datos con optimistic + reversión
 │   ├── lib/           # supabase.ts (cliente), content.ts (markdown→bloques)
 │   ├── migration/     # sisifo.ts (migración IndexedDB → Supabase)
+│   ├── theme/         # ThemeProvider, ThemeContext (claro/oscuro persistido)
 │   └── types/         # interfaces; supabase.ts (tipos generados)
 ├── index.html
 ├── vite.config.ts
@@ -41,11 +45,23 @@ apps/desktop/
 └── electron-builder.json5
 ```
 
+El shell (`src/components/shell/`) aporta el navigation rail Inicio/Épicas/Ajustes,
+el top app bar contextual, el FAB y el snackbar; la ventana Electron arranca en
+1280x840 con tamaño mínimo 960x640.
+
 ## Entorno
 
 Copiar `.env.example` a `.env` (gitignored) con la URL y la publishable key de
 Supabase local (`supabase status` en `backend/`). El renderer usa solo la
 publishable key; la secret/service_role nunca va en la app.
+
+Para builds de release, `.env.production` (gitignored) con la URL y publishable
+key del proyecto remoto `sisyflow` (us-east-1); `pnpm build` en modo producción
+las hornea en el bundle ([[Builds de escritorio (Windows)]]).
+
+Auth por deep link: la app registra el esquema `sisyflow` (`electron/main.ts`,
+single instance); los correos de Supabase vuelven a `sisyflow://auth/callback` y
+el renderer establece la sesión (`src/auth/authCallback.ts`).
 
 Ícono: la fuente editable es `assets/icon.svg` (paleta pastel, ver
 [[Builds de escritorio (Windows)]]); los binarios `build/icon.png`, `build/icon.ico`
@@ -82,6 +98,10 @@ pnpm build               # tsc + vite build + electron-builder
 
 - **Paridad**: no romper ninguna funcionalidad de [[Paridad funcional con TodoDex]]
   (todos y editor de contenido). Cambios que la afecten requieren ADR.
+- **Estética**: la UI sigue tokens Material Design 3
+  ([[ADR-012 Rediseno UI Material Design 3]]), que supersede la estética pastel
+  "Nintendo OS" heredada de TodoDex. No reintroducir colores ni estilos pastel
+  hardcodeados fuera de los tokens.
 - Sin store global (zustand/redux): hooks + capa de datos, como el proyecto base.
 - La capa de datos vive en hooks (`src/hooks/`) con mutaciones optimistas y
   reversión + aviso (`ToastProvider`); los componentes no importan el cliente

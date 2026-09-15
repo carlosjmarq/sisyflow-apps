@@ -1,15 +1,24 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
-import type { Todo, TodoStatus, Priority, Urgency } from '../types'
-import { STATUS_LABELS, PRIORITY_LABELS, URGENCY_LABELS } from '../types'
-import { X, Trash2, Calendar, Clock, Check, Pencil } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { AnimatePresence, motion } from 'motion/react'
+import type { Todo, TodoStatus, Priority, Urgency, Tag } from '../types'
+import { STATUS_LABELS, PRIORITY_LABELS, URGENCY_LABELS, paletteHex } from '../types'
 import { BlockEditor } from './BlockEditor'
-import { ConfirmDialog, Tooltip } from './ui'
+import {
+  Button,
+  ConfirmDialog,
+  Icon,
+  IconButton,
+  Select,
+  TruncatedTooltip,
+} from './ui'
 
 interface TodoDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   todo: Todo | null
   projectEpic?: { name: string; colorCode: string } | null
+  projectTags?: Tag[]
   onUpdate: (todoId: string, updates: Partial<Todo>) => void
   onDelete: () => void
 }
@@ -19,9 +28,19 @@ const DRAWER_MIN_WIDTH = 360
 const DRAWER_DEFAULT_WIDTH = 520
 const CONTENT_DEBOUNCE_MS = 800
 
-export function TodoDrawer({ open, onOpenChange, todo, projectEpic, onUpdate, onDelete }: TodoDrawerProps) {
-  const [visible, setVisible] = useState(false)
-  const [animating, setAnimating] = useState(false)
+const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }))
+const PRIORITY_OPTIONS = Object.entries(PRIORITY_LABELS).map(([value, label]) => ({ value, label }))
+const URGENCY_OPTIONS = Object.entries(URGENCY_LABELS).map(([value, label]) => ({ value, label }))
+
+export function TodoDrawer({
+  open,
+  onOpenChange,
+  todo,
+  projectEpic,
+  projectTags = [],
+  onUpdate,
+  onDelete,
+}: TodoDrawerProps) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [width, setWidth] = useState(() => {
     const saved = Number(localStorage.getItem(DRAWER_WIDTH_KEY))
@@ -57,19 +76,22 @@ export function TodoDrawer({ open, onOpenChange, todo, projectEpic, onUpdate, on
     pendingTodoId.current = null
   }, [])
 
-  const scheduleContentChange = useCallback((todoId: string, content: string, contentFormat: 'blocknote') => {
-    pendingTodoId.current = todoId
-    pendingContent.current = { content, contentFormat }
-    if (contentTimer.current) clearTimeout(contentTimer.current)
-    contentTimer.current = setTimeout(() => {
-      if (pendingContent.current && pendingTodoId.current) {
-        onUpdateRef.current(pendingTodoId.current, pendingContent.current)
-      }
-      pendingContent.current = null
-      pendingTodoId.current = null
-      contentTimer.current = undefined
-    }, CONTENT_DEBOUNCE_MS)
-  }, [])
+  const scheduleContentChange = useCallback(
+    (todoId: string, content: string, contentFormat: 'blocknote') => {
+      pendingTodoId.current = todoId
+      pendingContent.current = { content, contentFormat }
+      if (contentTimer.current) clearTimeout(contentTimer.current)
+      contentTimer.current = setTimeout(() => {
+        if (pendingContent.current && pendingTodoId.current) {
+          onUpdateRef.current(pendingTodoId.current, pendingContent.current)
+        }
+        pendingContent.current = null
+        pendingTodoId.current = null
+        contentTimer.current = undefined
+      }, CONTENT_DEBOUNCE_MS)
+    },
+    [],
+  )
 
   useEffect(() => () => flushContent(), [flushContent])
   useEffect(() => {
@@ -79,13 +101,22 @@ export function TodoDrawer({ open, onOpenChange, todo, projectEpic, onUpdate, on
     if (!open) flushContent()
   }, [open, flushContent])
 
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault()
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onOpenChange(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [open, onOpenChange])
+
+  const startResize = (event: React.MouseEvent) => {
+    event.preventDefault()
     document.body.classList.add('select-none')
     document.body.style.cursor = 'col-resize'
-    const onMove = (ev: MouseEvent) => {
+    const onMove = (moveEvent: MouseEvent) => {
       const max = window.innerWidth * 0.9
-      const next = Math.min(Math.max(window.innerWidth - ev.clientX, DRAWER_MIN_WIDTH), max)
+      const next = Math.min(Math.max(window.innerWidth - moveEvent.clientX, DRAWER_MIN_WIDTH), max)
       widthRef.current = next
       setWidth(next)
     }
@@ -114,22 +145,9 @@ export function TodoDrawer({ open, onOpenChange, todo, projectEpic, onUpdate, on
     }
   }, [editingTitle])
 
-  useEffect(() => {
-    if (open) {
-      setVisible(true)
-      requestAnimationFrame(() => setAnimating(true))
-    } else {
-      setAnimating(false)
-      const timer = setTimeout(() => setVisible(false), 300)
-      return () => clearTimeout(timer)
-    }
-  }, [open])
-
-  if (!visible || !todo) return null
-
-  const formatDate = (d: Date | string | null) => {
-    if (!d) return '—'
-    const date = d instanceof Date ? d : new Date(d)
+  const formatDate = (value: Date | string | null) => {
+    if (!value) return '—'
+    const date = value instanceof Date ? value : new Date(value)
     return date.toLocaleDateString('es-ES', {
       day: 'numeric',
       month: 'long',
@@ -137,188 +155,219 @@ export function TodoDrawer({ open, onOpenChange, todo, projectEpic, onUpdate, on
     })
   }
 
-  const isExpired = todo.expirationDate && new Date(todo.expirationDate) < new Date()
+  const isExpired = todo?.expirationDate && new Date(todo.expirationDate) < new Date()
+
+  const commitTitle = () => {
+    if (!todo) return
+    if (titleDraft.trim() && titleDraft.trim() !== todo.title) {
+      onUpdate(todo.id, { title: titleDraft.trim() })
+    } else {
+      setTitleDraft(todo.title)
+    }
+    setEditingTitle(false)
+  }
 
   return (
     <>
-      <div
-        className={`fixed inset-0 z-40 bg-nintendo-text/10 backdrop-blur-sm transition-opacity duration-300 ${
-          animating ? 'opacity-100' : 'opacity-0'
-        }`}
-        onClick={() => onOpenChange(false)}
-      />
-
-      <div
-        className={`fixed right-0 top-0 z-50 h-full bg-nintendo-card shadow-soft-lg border-l border-nintendo-border/60 flex flex-col transition-transform duration-300 ease-out ${
-          animating ? 'translate-x-0' : 'translate-x-full'
-        }`}
-        style={{ width, maxWidth: '90vw' }}
-      >
-        <div
-          onMouseDown={startResize}
-          className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-lavender/60 active:bg-lavender transition-colors z-10"
-        />
-        <div className="flex items-center justify-between px-6 py-5 border-b border-nintendo-border/40 gap-3">
-          {editingTitle ? (
-            <input
-              ref={titleInputRef}
-              value={titleDraft}
-              onChange={(e) => setTitleDraft(e.target.value)}
-              onBlur={() => {
-                if (titleDraft.trim() && titleDraft !== todo.title) {
-                  onUpdate(todo.id, { title: titleDraft.trim() })
-                } else {
-                  setTitleDraft(todo.title)
-                }
-                setEditingTitle(false)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  if (titleDraft.trim() && titleDraft !== todo.title) {
-                    onUpdate(todo.id, { title: titleDraft.trim() })
-                  } else {
-                    setTitleDraft(todo.title)
-                  }
-                  setEditingTitle(false)
-                }
-                if (e.key === 'Escape') {
-                  setTitleDraft(todo.title)
-                  setEditingTitle(false)
-                }
-              }}
-              className="font-bold text-lg bg-nintendo-bg rounded-lg px-2 py-1 outline-none flex-1 min-w-0"
+      {createPortal(
+        <AnimatePresence>
+          {open && todo && (
+            <>
+            <motion.div
+              key="drawer-overlay"
+              className="fixed inset-0 z-40 bg-scrim/32"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => onOpenChange(false)}
             />
-          ) : (
-            <div
-              className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer hover:bg-nintendo-bg rounded-lg px-2 py-1 transition-colors group/title"
-              onDoubleClick={() => setEditingTitle(true)}
+            <motion.aside
+              key="drawer-sheet"
+              role="dialog"
+              aria-label={`Detalle de ${todo.title}`}
+              className="fixed right-0 top-0 z-50 flex h-full flex-col bg-surface-container-low shadow-elev-3"
+              style={{ width, maxWidth: '90vw' }}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.3, ease: [0.05, 0.7, 0.1, 1] }}
             >
-              <Tooltip content={todo.title} className="flex-1">
-                <h2 className="font-bold text-lg text-nintendo-text truncate">
-                  {todo.title}
-                </h2>
-              </Tooltip>
-              <Pencil className="w-4 h-4 text-nintendo-muted/40 opacity-0 group-hover/title:opacity-100 transition-opacity flex-shrink-0" />
-            </div>
-          )}
-          <button
-            onClick={() => onOpenChange(false)}
-            className="p-2 rounded-xl hover:bg-nintendo-bg transition-colors flex-shrink-0"
-          >
-            <X className="w-5 h-5 text-nintendo-muted" />
-          </button>
-        </div>
+              <div
+                onMouseDown={startResize}
+                className="absolute left-0 top-0 z-10 h-full w-1.5 cursor-col-resize transition-colors hover:bg-primary/40 active:bg-primary/60"
+              />
 
-        <div className="px-6 py-4 border-b border-nintendo-border/40">
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <Field label="Estado">
-              <select
-                value={todo.status}
-                onChange={(e) => onUpdate(todo.id, { status: e.target.value as TodoStatus })}
-                className="text-xs font-medium bg-nintendo-bg rounded-lg px-2 py-1 border-0 outline-none cursor-pointer"
-              >
-                {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
-              </select>
-            </Field>
-
-            <Field label="Prioridad">
-              <select
-                value={todo.priority}
-                onChange={(e) => onUpdate(todo.id, { priority: e.target.value as Priority })}
-                className="text-xs font-medium bg-nintendo-bg rounded-lg px-2 py-1 border-0 outline-none cursor-pointer"
-              >
-                {Object.entries(PRIORITY_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
-              </select>
-            </Field>
-
-            <Field label="Urgencia">
-              <select
-                value={todo.urgency}
-                onChange={(e) => onUpdate(todo.id, { urgency: e.target.value as Urgency })}
-                className="text-xs font-medium bg-nintendo-bg rounded-lg px-2 py-1 border-0 outline-none cursor-pointer"
-              >
-                {Object.entries(URGENCY_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
-              </select>
-            </Field>
-
-            <Field label="Épica">
-              {projectEpic ? (
-                <span className="text-xs font-medium flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: projectEpic.colorCode }} />
-                  {projectEpic.name}
-                </span>
-              ) : (
-                <span className="text-xs text-nintendo-muted">—</span>
-              )}
-            </Field>
-
-            <Field label="Creado">
-              <span className="text-xs text-nintendo-muted flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {formatDate(todo.createdAt)}
-              </span>
-            </Field>
-
-            {todo.completedAt && (
-              <Field label="Completado">
-                <span className="text-xs text-mint-dark flex items-center gap-1">
-                  <Check className="w-3 h-3" />
-                  {formatDate(todo.completedAt)}
-                </span>
-              </Field>
-            )}
-
-            <Field label="Expira">
-              <div className="flex items-center gap-1">
-                <Clock className={`w-3 h-3 ${isExpired ? 'text-coral-dark' : 'text-nintendo-muted'}`} />
-                <input
-                  type="date"
-                  value={todo.expirationDate ? new Date(todo.expirationDate).toISOString().split('T')[0] : ''}
-                  onChange={(e) => onUpdate(todo.id, { expirationDate: e.target.value ? new Date(e.target.value) : null })}
-                  className={`text-xs font-medium bg-nintendo-bg rounded-lg px-2 py-1 border-0 outline-none ${
-                    isExpired ? 'text-coral-dark' : ''
-                  }`}
-                />
+              <div className="flex items-center justify-between gap-3 px-6 py-4">
+                {editingTitle ? (
+                  <input
+                    ref={titleInputRef}
+                    value={titleDraft}
+                    onChange={(event) => setTitleDraft(event.target.value)}
+                    onBlur={commitTitle}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') commitTitle()
+                      if (event.key === 'Escape') {
+                        setTitleDraft(todo.title)
+                        setEditingTitle(false)
+                      }
+                    }}
+                    className="min-w-0 flex-1 rounded-xs bg-surface-container-high px-3 py-2 text-title-large text-on-surface outline-none"
+                  />
+                ) : (
+                  <div
+                    className="group/title flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xs px-1 py-1 transition-colors hover:bg-surface-container-high"
+                    onDoubleClick={() => setEditingTitle(true)}
+                  >
+                    <TruncatedTooltip content={todo.title} className="flex-1">
+                      <h2 className="truncate text-title-large text-on-surface">{todo.title}</h2>
+                    </TruncatedTooltip>
+                    <Icon
+                      name="edit"
+                      size={18}
+                      className="shrink-0 text-on-surface-variant/50 opacity-0 transition-opacity group-hover/title:opacity-100"
+                    />
+                  </div>
+                )}
+                <IconButton icon="close" label="Cerrar" onClick={() => onOpenChange(false)} />
               </div>
-            </Field>
-          </div>
-        </div>
 
-        <div className="flex-1 flex flex-col min-h-0 px-6 py-4 overflow-hidden">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-nintendo-muted uppercase tracking-wide">
-              Contenido
-            </span>
-            <button
-              onClick={() => setDeleteOpen(true)}
-              className="flex items-center gap-1 text-xs text-coral-dark hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-coral/20"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Eliminar
-            </button>
-          </div>
-          <div className="flex-1 overflow-hidden rounded-2xl border border-nintendo-border/60">
-            <BlockEditor
-              content={todo.content}
-              contentFormat={todo.contentFormat}
-              todoId={todo.id}
-              onChange={(content, contentFormat) => scheduleContentChange(todo.id, content, contentFormat)}
-            />
-          </div>
-        </div>
-      </div>
+              <div className="grid grid-cols-2 gap-3 px-6 py-4">
+                <Select
+                  label="Estado"
+                  labelBgClass="bg-surface-container-low"
+                  options={STATUS_OPTIONS}
+                  value={todo.status}
+                  onChange={(value) => onUpdate(todo.id, { status: value as TodoStatus })}
+                />
+                <Select
+                  label="Prioridad"
+                  labelBgClass="bg-surface-container-low"
+                  options={PRIORITY_OPTIONS}
+                  value={todo.priority}
+                  onChange={(value) => onUpdate(todo.id, { priority: value as Priority })}
+                />
+                <Select
+                  label="Urgencia"
+                  labelBgClass="bg-surface-container-low"
+                  options={URGENCY_OPTIONS}
+                  value={todo.urgency}
+                  onChange={(value) => onUpdate(todo.id, { urgency: value as Urgency })}
+                />
+                <Field label="Épica">
+                  {projectEpic ? (
+                    <span className="flex items-center gap-2 text-body-medium text-on-surface">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: projectEpic.colorCode }}
+                      />
+                      {projectEpic.name}
+                    </span>
+                  ) : (
+                    <span className="text-body-medium text-on-surface-variant">—</span>
+                  )}
+                </Field>
+
+                <Field label="Creado">
+                  <span className="flex items-center gap-1.5 text-body-medium text-on-surface-variant">
+                    <Icon name="event" size={16} />
+                    {formatDate(todo.createdAt)}
+                  </span>
+                </Field>
+
+                {todo.completedAt && (
+                  <Field label="Completado">
+                    <span className="flex items-center gap-1.5 text-body-medium text-primary">
+                      <Icon name="check_circle" size={16} />
+                      {formatDate(todo.completedAt)}
+                    </span>
+                  </Field>
+                )}
+
+                <Field label="Expira">
+                  <div
+                    className={`flex h-12 items-center gap-2 rounded-xs border px-3 ${
+                      isExpired ? 'border-error' : 'border-outline'
+                    }`}
+                  >
+                    <Icon
+                      name="schedule"
+                      size={18}
+                      className={isExpired ? 'text-error' : 'text-on-surface-variant'}
+                    />
+                    <input
+                      type="date"
+                      value={
+                        todo.expirationDate
+                          ? new Date(todo.expirationDate).toISOString().split('T')[0]
+                          : ''
+                      }
+                      onChange={(event) =>
+                        onUpdate(todo.id, {
+                          expirationDate: event.target.value ? new Date(event.target.value) : null,
+                        })
+                      }
+                      className={`w-full bg-transparent text-body-medium outline-none ${
+                        isExpired ? 'text-error' : 'text-on-surface'
+                      }`}
+                    />
+                  </div>
+                </Field>
+              </div>
+
+              {projectTags.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 px-6 pb-2">
+                  {projectTags.map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="flex items-center gap-1.5 rounded-full bg-surface-container-high px-2.5 py-1 text-label-medium text-on-surface-variant"
+                    >
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: tag.color ? paletteHex(tag.color) : 'rgb(var(--md-outline))' }}
+                      />
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex min-h-0 flex-1 flex-col px-6 py-4">
+                <span className="mb-3 text-label-large text-on-surface-variant">Contenido</span>
+                <div className="min-h-0 flex-1 overflow-hidden rounded-md bg-surface-container-low">
+                  <BlockEditor
+                    content={todo.content}
+                    contentFormat={todo.contentFormat}
+                    todoId={todo.id}
+                    onChange={(content, contentFormat) =>
+                      scheduleContentChange(todo.id, content, contentFormat)
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end px-6 pb-4">
+                <Button
+                  variant="text"
+                  icon="delete"
+                  className="text-error"
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  Eliminar tarea
+                </Button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>,
+        document.body,
+      )}
 
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title="Eliminar tarea"
-        description={`Se eliminara permanentemente la tarea "${todo.title}". Esta accion no se puede deshacer.`}
+        description={`Se eliminará permanentemente la tarea "${todo?.title ?? ''}". Esta acción no se puede deshacer.`}
         onConfirm={onDelete}
       />
     </>
@@ -327,11 +376,9 @@ export function TodoDrawer({ open, onOpenChange, todo, projectEpic, onUpdate, on
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-nintendo-muted">
-        {label}
-      </span>
-      {children}
+    <div className="flex flex-col gap-1">
+      <span className="text-label-medium text-on-surface-variant">{label}</span>
+      <div className="flex min-h-12 items-center">{children}</div>
     </div>
   )
 }

@@ -1,10 +1,23 @@
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
-import { Button, Dialog, DialogContent, DialogTitle, Input, Select } from './ui'
+import {
+  Button,
+  ColorPicker,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Icon,
+  Select,
+  TextField,
+} from './ui'
 import { PROJECT_COLORS } from '../types'
 import { useEpics } from '../hooks/useProjects'
 
-export function ProjectForm({ open, onOpenChange, onCreate }: {
+export function ProjectForm({
+  open,
+  onOpenChange,
+  onCreate,
+}: {
   open: boolean
   onOpenChange: (open: boolean) => void
   onCreate: (name: string, color: string, epicId: string) => void
@@ -20,6 +33,13 @@ export function ProjectForm({ open, onOpenChange, onCreate }: {
   useEffect(() => {
     if (!epicId && epics.length > 0) setEpicId(epics[0].id)
   }, [epics, epicId])
+
+  useEffect(() => {
+    if (!open) {
+      setCreatingEpic(false)
+      setEpicName('')
+    }
+  }, [open])
 
   const handleCreate = () => {
     if (!name.trim() || !epicId) return
@@ -43,43 +63,30 @@ export function ProjectForm({ open, onOpenChange, onCreate }: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogTitle>Nuevo proyecto</DialogTitle>
-        <div className="flex flex-col gap-4 mt-4">
-          <Input
+        <div className="mt-4 flex flex-col gap-4">
+          <TextField
             label="Nombre del proyecto"
+            labelBgClass="bg-surface-container-high"
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Mi proyecto..."
+            onChange={(event) => setName(event.target.value)}
             autoFocus
-            onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+            onKeyDown={(event) => event.key === 'Enter' && handleCreate()}
           />
 
-          <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-semibold text-nintendo-muted">Color</span>
-            <div className="flex gap-2">
-              {PROJECT_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  onClick={() => setColor(c.bg)}
-                  className={`w-10 h-10 rounded-xl border-2 transition-all ${
-                    color === c.bg ? 'border-nintendo-text scale-110' : 'border-transparent'
-                  }`}
-                  style={{ backgroundColor: c.bg }}
-                />
-              ))}
-            </div>
-          </div>
+          <ColorPicker value={color} onChange={setColor} />
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             {epics.length > 0 ? (
               <Select
                 label="Épica"
-                placeholder="Elegir épica..."
-                options={epics.map((e) => ({ value: e.id, label: e.name }))}
+                labelBgClass="bg-surface-container-high"
+                placeholder="Elegir épica…"
+                options={epics.map((epic) => ({ value: epic.id, label: epic.name }))}
                 value={epicId || undefined}
                 onChange={setEpicId}
               />
             ) : (
-              <p className="text-xs text-nintendo-muted">
+              <p className="text-body-small text-on-surface-variant">
                 Este proyecto necesita una épica. Creá la primera.
               </p>
             )}
@@ -88,38 +95,27 @@ export function ProjectForm({ open, onOpenChange, onCreate }: {
               <button
                 type="button"
                 onClick={() => setCreatingEpic(true)}
-                className="flex items-center gap-1 self-start text-xs font-medium text-nintendo-muted hover:text-nintendo-text transition-colors px-2 py-1 rounded-lg hover:bg-nintendo-bg"
+                className="state-layer flex h-10 items-center gap-2 self-start rounded-full pl-3 pr-4 text-label-large text-primary"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Icon name="add" size={18} />
                 Nueva épica
               </button>
             ) : (
-              <div className="bg-nintendo-bg rounded-2xl p-3 flex flex-col gap-3">
-                <Input
+              <div className="flex flex-col gap-3 rounded-md bg-surface-container p-4">
+                <TextField
                   label="Nombre de la épica"
+                  labelBgClass="bg-surface-container"
                   value={epicName}
-                  onChange={(e) => setEpicName(e.target.value)}
-                  placeholder="Salud, Carrera, Inglés..."
+                  onChange={(event) => setEpicName(event.target.value)}
                   autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreateEpic()}
+                  onKeyDown={(event) => event.key === 'Enter' && handleCreateEpic()}
                 />
-                <div className="flex gap-1.5">
-                  {PROJECT_COLORS.map((c) => (
-                    <button
-                      key={c.value}
-                      onClick={() => setEpicColor(c.bg)}
-                      className={`w-7 h-7 rounded-lg border-2 transition-all ${
-                        epicColor === c.bg ? 'border-nintendo-text scale-110' : 'border-transparent'
-                      }`}
-                      style={{ backgroundColor: c.bg }}
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-2 justify-end">
-                  <Button variant="ghost" size="sm" onClick={() => setCreatingEpic(false)}>
+                <ColorPicker value={epicColor} onChange={setEpicColor} size="sm" ringOffsetClass="ring-offset-surface-container" />
+                <div className="flex justify-end gap-2">
+                  <Button variant="text" size="sm" onClick={() => setCreatingEpic(false)}>
                     Cancelar
                   </Button>
-                  <Button variant="secondary" size="sm" onClick={handleCreateEpic} disabled={!epicName.trim()}>
+                  <Button variant="tonal" size="sm" onClick={handleCreateEpic} disabled={!epicName.trim()}>
                     Crear épica
                   </Button>
                 </div>
@@ -127,14 +123,14 @@ export function ProjectForm({ open, onOpenChange, onCreate }: {
             )}
           </div>
 
-          <div className="flex gap-3 justify-end mt-2">
-            <Button variant="secondary" onClick={() => onOpenChange(false)}>
+          <DialogActions>
+            <Button variant="text" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button variant="primary" onClick={handleCreate} disabled={!name.trim() || !epicId}>
+            <Button variant="filled" onClick={handleCreate} disabled={!name.trim() || !epicId}>
               Crear proyecto
             </Button>
-          </div>
+          </DialogActions>
         </div>
       </DialogContent>
     </Dialog>
