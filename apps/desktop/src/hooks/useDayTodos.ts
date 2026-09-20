@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthContext'
 import { useToast } from '../components/ui/ToastContext'
 import { mapTodo, type TodoRow } from '../data/mappers'
+import { useTodoCompletions } from './useTodoCompletions'
 import type { Todo } from '../types'
 
 export interface DayTodo extends Todo {
@@ -41,6 +42,11 @@ export function useDayTodos() {
   const { showToast } = useToast()
   const [todos, setTodos] = useState<DayTodo[]>([])
   const [loading, setLoading] = useState(true)
+  const {
+    forTodo: completionsForTodo,
+    complete: completeTodo,
+    undoLast: undoLastCompletion,
+  } = useTodoCompletions(todos)
 
   const load = useCallback(async () => {
     if (!user) return
@@ -71,5 +77,5 @@ export function useDayTodos() {
     load()
   }, [load])
 
-  return { todos, loading, reload: load }
+  return { todos, loading, reload: load, completionsForTodo, completeTodo, undoLastCompletion }
 }

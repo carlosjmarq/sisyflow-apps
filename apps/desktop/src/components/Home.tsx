@@ -60,7 +60,7 @@ export function Home() {
     updateProject,
   } = useProjects()
   const { epics } = useEpics()
-  const { logs, streaks, globalStreak, loading: statsLoading } = useGamification()
+  const { logs, streaks, globalStreak, loading: statsLoading, reload: reloadStats } = useGamification()
 
   const epicsById = useMemo(() => new Map(epics.map((epic) => [epic.id, epic])), [epics])
   const selectedEpic = scope === 'global' ? null : epicsById.get(scope) ?? null
@@ -158,7 +158,7 @@ export function Home() {
 
           <section className="flex flex-col gap-3">
             <h2 className="text-title-medium text-on-surface">Tareas del día</h2>
-            <DayView />
+            <DayView onActivity={reloadStats} />
           </section>
 
           <section className="flex flex-col gap-3">

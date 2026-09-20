@@ -5,7 +5,14 @@ import { toContentJson } from '../lib/content.js'
 import { fail } from '../lib/errors.js'
 import { emit, formatDate, truncate, type Column } from '../lib/format.js'
 import { resolveProjectId } from '../lib/resolve.js'
-import { parseContentFormat, parseDate, parsePriority, parseTodoStatus, parseUrgency } from '../lib/validate.js'
+import {
+  parseContentFormat,
+  parseDate,
+  parsePriority,
+  parseRecurrence,
+  parseTodoStatus,
+  parseUrgency,
+} from '../lib/validate.js'
 
 type TodoUpdate = Database['public']['Tables']['todos']['Update']
 
@@ -14,8 +21,15 @@ const COLUMNS: Column[] = [
   { key: 'title', label: 'TÍTULO' },
   { key: 'status', label: 'ESTADO' },
   { key: 'priority', label: 'PRIORIDAD' },
+  { key: 'recurrence', label: 'REPETICIÓN' },
   { key: 'project', label: 'PROYECTO' },
   { key: 'due', label: 'VENCE' },
+]
+
+const CHECK_COLUMNS: Column[] = [
+  { key: 'id', label: 'ID' },
+  { key: 'title', label: 'TÍTULO' },
+  { key: 'completed_at', label: 'COMPLETADO' },
 ]
 
 interface TodoOptions {
@@ -24,6 +38,7 @@ interface TodoOptions {
   status?: string
   priority?: string
   urgency?: string
+  recurrence?: string
   due?: string
   content?: string
   contentFormat?: string
@@ -35,6 +50,7 @@ interface TodoRow {
   status: string
   priority: string
   urgency: string
+  recurrence: string
   expiration_date: string | null
   created_at: string
   projects?: { name: string } | null
@@ -46,6 +62,7 @@ function toRow(t: TodoRow): Record<string, string> {
     title: truncate(t.title, 40),
     status: t.status,
     priority: t.priority,
+    recurrence: t.recurrence,
     project: t.projects?.name ?? t.id.slice(0, 8),
     due: formatDate(t.expiration_date),
   }
@@ -62,6 +79,7 @@ export function registerTodo(program: Command): void {
     .option('--status <status>', 'Estado: backlog, todo, in-progress, done, cancelled', 'todo')
     .option('--priority <priority>', 'Prioridad: low, medium, high, critical', 'medium')
     .option('--urgency <urgency>', 'Urgencia: low, medium, high, critical', 'medium')
+    .option('--recurrence <recurrence>', 'Repetición: none, daily, weekdays, weekly, monthly', 'none')
     .option('--due <date>', 'Fecha de expiración (YYYY-MM-DD o ISO 8601)')
     .option('--content <text>', 'Contenido de la tarea (texto)')
     .option('--content-format <format>', 'Formato del contenido: blocknote, markdown', 'blocknote')
@@ -73,6 +91,7 @@ export function registerTodo(program: Command): void {
       const status = parseTodoStatus(options.status!)
       const priority = parsePriority(options.priority!)
       const urgency = parseUrgency(options.urgency!)
+      const recurrence = parseRecurrence(options.recurrence!)
       const contentFormat = options.content ? parseContentFormat(options.contentFormat!) : undefined
       const content = options.content ? toContentJson(options.content) : undefined
       const expirationDate = options.due ? parseDate(options.due) : null
@@ -85,6 +104,7 @@ export function registerTodo(program: Command): void {
         status,
         priority,
         urgency,
+        recurrence,
         expiration_date: expirationDate,
         ...(content !== undefined ? { content, content_format: contentFormat } : {}),
       })
@@ -95,6 +115,7 @@ export function registerTodo(program: Command): void {
         status,
         priority,
         urgency,
+        recurrence,
         expiration_date: expirationDate,
         created_at: new Date().toISOString(),
         projects: null,
@@ -149,6 +170,7 @@ export function registerTodo(program: Command): void {
     .option('--status <status>', 'Nuevo estado')
     .option('--priority <priority>', 'Nueva prioridad')
     .option('--urgency <urgency>', 'Nueva urgencia')
+    .option('--recurrence <recurrence>', 'Nueva repetición: none, daily, weekdays, weekly, monthly')
     .option('--due <date>', 'Nueva fecha de expiración')
     .option('--content <text>', 'Nuevo contenido')
     .option('--content-format <format>', 'Formato del contenido: blocknote, markdown')
@@ -163,6 +185,7 @@ export function registerTodo(program: Command): void {
       if (options.status !== undefined) updates.status = parseTodoStatus(options.status)
       if (options.priority !== undefined) updates.priority = parsePriority(options.priority)
       if (options.urgency !== undefined) updates.urgency = parseUrgency(options.urgency)
+      if (options.recurrence !== undefined) updates.recurrence = parseRecurrence(options.recurrence)
       if (options.due !== undefined) updates.expiration_date = options.due ? parseDate(options.due) : null
       if (options.content !== undefined) {
         updates.content = toContentJson(options.content)
@@ -180,6 +203,45 @@ export function registerTodo(program: Command): void {
         .maybeSingle()
       if (error) fail(`No se pudo actualizar la tarea: ${error.message}`)
       emit({ json }, data as unknown as TodoRow, COLUMNS, [toRow(data as unknown as TodoRow)])
+    })
+
+  todo
+    .command('check')
+    .description('Registra un completado de una tarea recurrente')
+    .argument('<id>', 'Id de la tarea')
+    .action(async (id: string, _options: Record<string, unknown>, command: Command) => {
+      const { client, session, json } = await getContext(command)
+      const { data, error } = await client
+        .from('todos')
+        .select('id, title, recurrence')
+        .eq('id', id)
+        .maybeSingle()
+      if (error) fail(`No se pudo cargar la tarea: ${error.message}`)
+      if (!data) fail(`Tarea "${id}" no encontrada`)
+      if (data.recurrence === 'none') {
+        fail('La tarea no es recurrente: actualízala con --recurrence para poder completarla repetidas veces')
+      }
+
+      const completionId = crypto.randomUUID()
+      const { error: insertError } = await client.from('todo_completions').insert({
+        id: completionId,
+        todo_id: id,
+        user_id: session.user.id,
+      })
+      if (insertError) fail(`No se pudo registrar el completado: ${insertError.message}`)
+
+      const row = {
+        id: completionId,
+        title: data.title,
+        completed_at: new Date().toISOString(),
+      }
+      emit({ json }, row, CHECK_COLUMNS, [
+        {
+          id: completionId.slice(0, 8),
+          title: truncate(data.title, 40),
+          completed_at: formatDate(row.completed_at),
+        },
+      ])
     })
 
   todo

@@ -96,6 +96,9 @@ migración Sísifo (US 1.2).
       persistente (Fase 3, 2026-09-13).
 - [x] Proyecto remoto de producción creado y migrado (2026-09-13:
       `sisyflow`, ref `djjttyejsbicmrvmgyep`, us-east-1).
+- [x] Migración de tareas recurrentes (US 4.1, ADR-014) aplicada en local
+      (2026-09-20): `db reset` limpio, 61 tests pgTAP en verde y advisors sin
+      issues; pendiente `db push` al remoto ([[Supabase local y remoto]]).
 
 ## Relaciones
 

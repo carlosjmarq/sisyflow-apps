@@ -15,6 +15,8 @@ App de escritorio de SisyFlow. Parte del monorepo `sisyflow-apps` ([[ADR-002 Mon
 - Editor de contenido: BlockNote + Mantine 8 ([[Editor de contenido (BlockNote)]])
 - Datos: Supabase nube-first con UI optimista ([[Capa de datos Supabase]]);
   Dexie 4 queda solo como origen de la migración Sísifo
+- Tareas recurrentes: periodicidad por tarea y historial en `todo_completions`
+  ([[ADR-014 Tareas recurrentes]]); backup v4
 - Auth: Supabase email/contraseña con sesión persistente (`src/auth/`)
 - Router: react-router-dom 7 (HashRouter)
 - pnpm con `node-linker=hoisted` (`.npmrc` en la raíz del monorepo)

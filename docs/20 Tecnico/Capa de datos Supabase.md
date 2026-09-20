@@ -45,7 +45,8 @@ Supabase es la fuente de verdad; Dexie queda solo como origen de la migración.
 | `useEpics()` | todas las épicas | CRUD completo (pantalla `/epics`) |
 | `useProjectTags(projectId)` | tags del proyecto | CRUD con UI (ADR-012) |
 | `useSearchTodos(query)` | `ilike` sobre título con debounce | búsqueda global con UI (ADR-012) |
-| `useDayTodos()` | tareas pendientes de proyectos activos con proyecto/épica embebidos | — (vista "Tareas del día", ADR-010) |
+| `useDayTodos()` | tareas pendientes de proyectos activos con proyecto/épica embebidos | completar/deshacer recurrentes (vista "Tareas del día", ADR-010) |
+| `useTodoCompletions(todos)` | `todo_completions` de los últimos ~2 meses, agrupados por tarea | `complete`, `remove` y `undoLast` con optimista + reversión (US 4.1, ADR-014) |
 | `useGamification(days)` | RPC `daily_epic_logs_tz` + `epic_streaks` y `streak_global` con la zona horaria del cliente | — (Inicio progress-first, ADR-011/ADR-012) |
 
 Patrón de mutación:
@@ -57,6 +58,21 @@ Patrón de mutación:
 Los componentes **nunca** importan el cliente Supabase directamente: solo hooks.
 El contenido del editor se guarda con debounce de 800 ms (BlockNote emite en
 cada tecla) y se fuerza el guardado al cambiar de tarea o cerrar el drawer.
+
+### Tareas recurrentes (US 4.1, ADR-014)
+
+- `Todo.recurrence` (`none`, `daily`, `weekdays`, `weekly`, `monthly`) y el
+  historial `TodoCompletion` viven en `src/types/index.ts` y `mappers.ts`.
+- `useTodoCompletions` centraliza el historial; `useProjectTodos` y `useDayTodos`
+  lo integran y exponen `completionsForTodo`, `completeTodo`, `removeCompletion`
+  y `undoLastCompletion` (optimista + reversión).
+- `changeRecurrence` convierte una tarea completada en recurrente: inserta el
+  `completedAt` previo como primer completado y devuelve la tarea a pendiente,
+  sin perder la racha.
+- El estado "hecho" del período (día, semana desde el lunes, mes desde el día 1)
+  se calcula en el cliente (`src/lib/recurrence.ts`); SQL solo agrega marcas de
+  tiempo por día local.
+- El backup sube a v4 (exporta `todo_completions`); el import acepta v2, v3 y v4.
 
 ### Errores y avisos
 
@@ -84,7 +100,8 @@ cada tecla) y se fuerza el guardado al cambiar de tarea o cerrar el drawer.
       transitorios de JWT (se observó un `PGRST303: JWT issued at future` una
       única vez tras un reinicio del stack, con relojes sincronizados).
 - [ ] Verificación E2E manual de la UI en el build empaquetado (fase `/deliver`).
-- [ ] Realtime de Supabase no se usa por ahora (revisar en `/gamification`).
+- [x] Realtime de Supabase: se revisó en `/gamification` y no se usa; las vistas
+      se recargan al completar actividad.
 - [ ] Revisar índices cuando el volumen de datos crezca.
 
 ## Relaciones

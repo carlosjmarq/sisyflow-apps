@@ -37,9 +37,12 @@ sisyflow project update <id|nombre> [--name] [--epic] [--color] [--status]
 sisyflow project delete <id|nombre> [--yes]
 
 sisyflow todo create --title <t> --project <id|nombre> [--status] [--priority] [--urgency]
+                     [--recurrence none|daily|weekdays|weekly|monthly]
                      [--due <fecha>] [--content <texto>] [--content-format blocknote|markdown]
 sisyflow todo list [--project] [--status] [--json] | get <id> [--json]
-sisyflow todo update <id> [--title] [--status] [--priority] [--urgency] [--due] [--content]
+sisyflow todo update <id> [--title] [--status] [--priority] [--urgency] [--recurrence]
+                        [--due] [--content]
+sisyflow todo check <id>            # registra un completado de una tarea recurrente
 sisyflow todo delete <id> [--yes]
 
 sisyflow import <archivo.json>     # épicas/proyectos/tareas en lote
@@ -97,6 +100,16 @@ Windows para evitar el redirect UTF-16 de PowerShell 5.1).
 - `sisyflow import <archivo.json>` crea épicas, proyectos y tareas en lote
   (validado con zod), reportando cantidades y errores por fila.
 
+## Tareas recurrentes (US 4.1, ADR-014)
+
+- `--recurrence` en `todo create`/`todo update` (`none` por defecto); la columna
+  REPETICIÓN se muestra en `list`/`get`.
+- `sisyflow todo check <id>` inserta un completado en `todo_completions` con la
+  fecha y hora actuales; falla con exit code 1 si la tarea no existe o no es
+  recurrente.
+- Los completados alimentan el heatmap y las rachas igual que en el desktop
+  ([[Gamificacion]]).
+
 ## Restricciones de integridad
 
 - `epic delete` falla si la épica tiene proyectos (FK `on delete restrict`,
@@ -107,7 +120,9 @@ Windows para evitar el redirect UTF-16 de PowerShell 5.1).
 
 ## Pendientes
 
-- [ ] Smoke test manual contra Supabase local con el seed (ana@example.com).
+- [x] Smoke test manual contra Supabase local con el seed (ana@example.com),
+      hecho el 2026-09-20: login, `todo create --recurrence`, `todo check`,
+      `todo update --recurrence` y `todo list` con `--json`.
 - [ ] Considerar extraer `parseContent` a un paquete compartido si el CLI crece.
 
 ## Relaciones

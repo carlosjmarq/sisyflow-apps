@@ -274,3 +274,27 @@ _La visualización del esfuerzo para no romper la cadena._
           
         
     - Si el usuario decide proactivamente completar una tarea en fin de semana, ese día sí suma +1 a la racha total como recompensa por el esfuerzo extra.
+
+## Módulo 4: Tareas recurrentes
+
+_Evitar crear la misma tarea todos los días: una tarea, muchos empujes._
+
+**US 4.1: Tareas recurrentes (una tarea, N completados)**
+
+- **Como** usuario, **quiero** definir una periodicidad para una tarea y marcarla como completada cada vez que la hago **para** no crear tareas repetidas del mismo hábito o actividad (ej. ver una clase del curso todos los días).
+
+- **Detalles Técnicos (Esquema):** `todos.recurrence` (enum: `none`, `daily`, `weekdays`, `weekly`, `monthly`); tabla `todo_completions` (`id`, `todo_id` fk, `user_id`, `completed_at`) como historial de cada empujón de una tarea recurrente.
+
+- **Criterios de Aceptación:**
+
+    - Se puede elegir la periodicidad al crear o editar la tarea: nunca, diaria, días hábiles (L–V), semanal o mensual; por defecto "nunca".
+
+    - La tarea recurrente nunca pasa a `done`: cada clic en el check registra un completado con fecha y hora, y el contador del período (`×N hoy/esta semana/este mes`) se incrementa.
+
+    - El período se reinicia en calendario local: el día a las 00:00, la semana el lunes y el mes el día 1.
+
+    - Cada completado alimenta el heatmap (intensidad por cantidad) y la racha (actividad del día) igual que una tarea normal.
+
+    - Se puede deshacer el último completado y ver el historial reciente en el detalle de la tarea.
+
+    - Las tareas sin recurrencia conservan el comportamiento actual (`status = done` + `completed_at`), sin regresiones de paridad.

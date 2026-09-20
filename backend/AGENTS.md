@@ -21,9 +21,10 @@ backend/
 └── supabase/
     ├── config.toml      # project_id sisyflow; puertos 453xx (restricción de Windows)
     ├── migrations/      # 20260913191443_initial_schema.sql, 20260913205909_epic_delete_restrict.sql,
-    │                    # 20260913211858_gamification_rpc.sql, 20260913224500_global_streak.sql
+    │                    # 20260913211858_gamification_rpc.sql, 20260913224500_global_streak.sql,
+    │                    # 20260920120000_recurring_todos.sql
     ├── tests/           # rls_test.sql, hierarchy_test.sql, gamification_test.sql,
-    │                    # global_streak_test.sql (pgTAP, 47 aserciones)
+    │                    # global_streak_test.sql, recurring_test.sql (pgTAP, 61 aserciones)
     ├── functions/       # edge functions (vacío; solo con ADR)
     └── seed.sql         # usuarios de prueba + datos de ejemplo
 ```
@@ -79,3 +80,8 @@ La vista `daily_epic_logs` alimenta la gamificación (`[[Gamificacion]]`).
 > Fases posteriores (2026-09-13): la suite pgTAP creció a 27 aserciones
 > (jerarquía), 38 (gamificación) y 47 (racha global, migración
 > `20260913224500_global_streak.sql`, 9 aserciones).
+>
+> Tareas recurrentes (2026-09-20, US 4.1, ADR-014): migración
+> `20260920120000_recurring_todos.sql` (enum `todo_recurrence`, tabla
+> `todo_completions`, trigger de integridad y unión en la gamificación) y
+> `recurring_test.sql` (12 aserciones; 61 en total).

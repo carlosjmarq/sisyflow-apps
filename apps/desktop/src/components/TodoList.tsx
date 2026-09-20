@@ -20,7 +20,8 @@ import {
   Skeleton,
 } from './ui'
 import { TopAppBar } from './shell/TopAppBar'
-import type { Priority, Todo, TodoSortKey, TodoStatus } from '../types'
+import { recurrencePeriodLabel } from '../lib/recurrence'
+import type { Priority, Todo, TodoRecurrence, TodoSortKey, TodoStatus } from '../types'
 import {
   TODO_SORT_OPTIONS,
   STATUS_LABELS,
@@ -44,7 +45,18 @@ export function TodoList() {
   const location = useLocation()
   const { projects } = useProjects()
   const [sortBy, setSortBy] = useState<TodoSortKey>('createdAt')
-  const { todos, loading, createTodo, updateTodo, deleteTodo } = useProjectTodos(projectId, sortBy)
+  const {
+    todos,
+    loading,
+    createTodo,
+    updateTodo,
+    deleteTodo,
+    completionsForTodo,
+    completeTodo,
+    removeCompletion,
+    undoLastCompletion,
+    changeRecurrence,
+  } = useProjectTodos(projectId, sortBy)
   const { tags } = useProjectTags(projectId)
 
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
@@ -99,6 +111,43 @@ export function TodoList() {
     if (selectedTodo?.id === id) {
       setSelectedTodo((prev) => (prev ? { ...prev, ...updates } : null))
     }
+  }
+
+  const handleRecurrenceChange = async (id: string, recurrence: TodoRecurrence) => {
+    await changeRecurrence(id, recurrence)
+    if (selectedTodo?.id === id) {
+      setSelectedTodo((prev) =>
+        prev
+          ? {
+              ...prev,
+              recurrence,
+              ...(prev.status === 'done' && recurrence !== 'none'
+                ? { status: 'todo' as TodoStatus, completedAt: null }
+                : {}),
+            }
+          : null,
+      )
+    }
+  }
+
+  const renderTodo = (todo: Todo) => {
+    const completion = completionsForTodo(todo.id)
+    return (
+      <TodoItem
+        key={todo.id}
+        todo={todo}
+        epicName={projectEpic?.name}
+        epicColor={projectEpic?.colorCode}
+        onClick={() => handleSelectTodo(todo)}
+        onStatusChange={(status) => handleUpdateTodo(todo.id, { status })}
+        onDelete={() => deleteTodo(todo.id)}
+        completionCount={completion.count}
+        completionLabel={recurrencePeriodLabel(todo.recurrence)}
+        completionLastAt={completion.lastCompletedAt}
+        onComplete={() => void completeTodo(todo.id)}
+        onUndoCompletion={() => void undoLastCompletion(todo.id)}
+      />
+    )
   }
 
   const subtitle = project
@@ -215,17 +264,7 @@ export function TodoList() {
               {pendingTodos.length > 0 && (
                 <div className="flex flex-col gap-2">
                   <SectionHeader label="Pendientes" count={pendingTodos.length} />
-                  {pendingTodos.map((todo) => (
-                    <TodoItem
-                      key={todo.id}
-                      todo={todo}
-                      epicName={projectEpic?.name}
-                      epicColor={projectEpic?.colorCode}
-                      onClick={() => handleSelectTodo(todo)}
-                      onStatusChange={(status) => handleUpdateTodo(todo.id, { status })}
-                      onDelete={() => deleteTodo(todo.id)}
-                    />
-                  ))}
+                  {pendingTodos.map(renderTodo)}
                 </div>
               )}
 
@@ -233,17 +272,7 @@ export function TodoList() {
                 <div className="flex flex-col gap-2">
                   <SectionHeader label="Completados" count={completedTodos.length} />
                   <div className="flex flex-col gap-2 opacity-75">
-                    {completedTodos.map((todo) => (
-                      <TodoItem
-                        key={todo.id}
-                        todo={todo}
-                        epicName={projectEpic?.name}
-                        epicColor={projectEpic?.colorCode}
-                        onClick={() => handleSelectTodo(todo)}
-                        onStatusChange={(status) => handleUpdateTodo(todo.id, { status })}
-                        onDelete={() => deleteTodo(todo.id)}
-                      />
-                    ))}
+                    {completedTodos.map(renderTodo)}
                   </div>
                 </div>
               )}
@@ -252,17 +281,7 @@ export function TodoList() {
                 <div className="flex flex-col gap-2">
                   <SectionHeader label="Cancelados" count={cancelledTodos.length} />
                   <div className="flex flex-col gap-2 opacity-60">
-                    {cancelledTodos.map((todo) => (
-                      <TodoItem
-                        key={todo.id}
-                        todo={todo}
-                        epicName={projectEpic?.name}
-                        epicColor={projectEpic?.colorCode}
-                        onClick={() => handleSelectTodo(todo)}
-                        onStatusChange={(status) => handleUpdateTodo(todo.id, { status })}
-                        onDelete={() => deleteTodo(todo.id)}
-                      />
-                    ))}
+                    {cancelledTodos.map(renderTodo)}
                   </div>
                 </div>
               )}
@@ -288,6 +307,11 @@ export function TodoList() {
             setDrawerOpen(false)
           }
         }}
+        completionState={selectedTodo ? completionsForTodo(selectedTodo.id) : undefined}
+        onRecurrenceChange={(recurrence) => {
+          if (selectedTodo) void handleRecurrenceChange(selectedTodo.id, recurrence)
+        }}
+        onRemoveCompletion={(completionId) => void removeCompletion(completionId)}
       />
 
       <TodoForm open={formOpen} onOpenChange={setFormOpen} onCreate={createTodo} />

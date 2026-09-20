@@ -71,6 +71,16 @@ en cada fase.
 - [x] Tareas nuevas con contenido vacío válido (`'[]'`).
 - [x] Conversión de contenido markdown legacy a bloques (función con `marked`).
 
+### Tareas recurrentes (nuevo, US 4.1)
+
+- [x] Periodicidad por tarea (`none`, `daily`, `weekdays`, `weekly`, `monthly`) y
+      registro de completados repetidos con historial
+      ([[ADR-014 Tareas recurrentes]]).
+- [x] Completar desde el proyecto y desde «Tareas del día»; contador del período,
+      deshacer y borrado de completados en el detalle.
+- [x] Las tareas sin recurrencia conservan el flujo actual (`status = done` +
+      `completed_at`), sin regresiones.
+
 ### Look & feel
 
 - [x] Estética Material Design 3 (tokens MD3, light/dark con toggle, iconos
@@ -99,6 +109,12 @@ en cada fase.
       9 de racha global); E2E manual en light y dark (login, dashboard con racha
       reactiva al completar una tarea, heatmap compacto/expandido, búsqueda con
       deep-link al drawer de la tarea, tags y migración Sísifo).
+- [x] Regresión de tareas recurrentes ([[ADR-014 Tareas recurrentes]],
+      2026-09-20): 61 tests pgTAP (12 nuevos de recurrencia), lint y typecheck
+      verdes en desktop y CLI; smoke test del CLI (create/check/update/list) y
+      E2E de UI (crear recurrente, completar ×2 desde Inicio con heatmap
+      reactivo, deshacer, historial con borrado, conversión de tarea completada
+      a recurrente y tareas de una vez sin cambios).
 
 ### Hallazgos de la Fase 5
 

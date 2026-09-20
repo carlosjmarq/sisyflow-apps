@@ -1,6 +1,9 @@
 import { useState } from 'react'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from './ui'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Select, TextField } from './ui'
 import type { NewTodoInput } from '../hooks/useProjects'
+import { RECURRENCE_LABELS, type TodoRecurrence } from '../types'
+
+const RECURRENCE_OPTIONS = Object.entries(RECURRENCE_LABELS).map(([value, label]) => ({ value, label }))
 
 export function TodoForm({
   open,
@@ -12,6 +15,7 @@ export function TodoForm({
   onCreate: (todo: NewTodoInput) => void
 }) {
   const [title, setTitle] = useState('')
+  const [recurrence, setRecurrence] = useState<TodoRecurrence>('none')
 
   const handleCreate = () => {
     if (!title.trim()) return
@@ -24,8 +28,10 @@ export function TodoForm({
       contentFormat: 'blocknote',
       createdAt: new Date(),
       expirationDate: null,
+      recurrence,
     })
     setTitle('')
+    setRecurrence('none')
     onOpenChange(false)
   }
 
@@ -41,6 +47,13 @@ export function TodoForm({
             onChange={(event) => setTitle(event.target.value)}
             autoFocus
             onKeyDown={(event) => event.key === 'Enter' && handleCreate()}
+          />
+          <Select
+            label="Repetición"
+            labelBgClass="bg-surface-container-high"
+            options={RECURRENCE_OPTIONS}
+            value={recurrence}
+            onChange={(value) => setRecurrence(value as TodoRecurrence)}
           />
           <DialogActions>
             <Button variant="text" onClick={() => onOpenChange(false)}>

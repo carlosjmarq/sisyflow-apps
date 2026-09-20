@@ -90,6 +90,25 @@ values
 on conflict (id) do nothing;
 
 -- ----------------------------------------------------------------------------
+-- Tarea recurrente de ejemplo (US 4.1): "Ver clase del curso" todos los días
+-- ----------------------------------------------------------------------------
+insert into public.todos (id, project_id, user_id, title, status, priority, urgency, expiration_date, content, content_format, completed_at, recurrence)
+values
+  ('c1000000-0000-4000-8000-000000000007', 'b1000000-0000-4000-8000-000000000002', '11111111-1111-4111-8111-111111111111', 'Ver clase del curso', 'in-progress', 'high', 'medium', null, '[]'::jsonb, 'blocknote', null, 'daily')
+on conflict (id) do nothing;
+
+-- ----------------------------------------------------------------------------
+-- Completados de la tarea recurrente (alimentan heatmap y rachas)
+-- ----------------------------------------------------------------------------
+insert into public.todo_completions (id, todo_id, user_id, completed_at)
+values
+  ('f1000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000007', '11111111-1111-4111-8111-111111111111', date_trunc('day', now()) - interval '2 days' + interval '2 hours'),
+  ('f1000000-0000-4000-8000-000000000002', 'c1000000-0000-4000-8000-000000000007', '11111111-1111-4111-8111-111111111111', date_trunc('day', now()) - interval '1 day' + interval '2 hours'),
+  ('f1000000-0000-4000-8000-000000000003', 'c1000000-0000-4000-8000-000000000007', '11111111-1111-4111-8111-111111111111', date_trunc('day', now()) - interval '1 day' + interval '3 hours'),
+  ('f1000000-0000-4000-8000-000000000004', 'c1000000-0000-4000-8000-000000000007', '11111111-1111-4111-8111-111111111111', now())
+on conflict (id) do nothing;
+
+-- ----------------------------------------------------------------------------
 -- Tags
 -- ----------------------------------------------------------------------------
 insert into public.tags (id, project_id, user_id, name, color_code)

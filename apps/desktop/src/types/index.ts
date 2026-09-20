@@ -28,6 +28,15 @@ export interface Project {
 export type TodoStatus = 'backlog' | 'todo' | 'in-progress' | 'done' | 'cancelled'
 export type Priority = 'low' | 'medium' | 'high' | 'critical'
 export type Urgency = 'low' | 'medium' | 'high' | 'critical'
+export type TodoRecurrence = 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly'
+
+export const RECURRENCE_LABELS: Record<TodoRecurrence, string> = {
+  none: 'Nunca',
+  daily: 'Diaria',
+  weekdays: 'Días hábiles',
+  weekly: 'Semanal',
+  monthly: 'Mensual',
+}
 
 export const STATUS_LABELS: Record<TodoStatus, string> = {
   backlog: 'Backlog',
@@ -99,6 +108,13 @@ export interface Todo {
   updatedAt?: Date
   expirationDate: Date | null
   completedAt?: Date | null
+  recurrence: TodoRecurrence
+}
+
+export interface TodoCompletion {
+  id: string
+  todoId: string
+  completedAt: Date
 }
 
 export type TagColor = string

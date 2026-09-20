@@ -42,6 +42,10 @@ SisyFlow el 2026-09-13 ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
   chips de racha por épica, tareas del día y proyectos); se elimina la ruta
   `/progress` (absorbida por Inicio); búsqueda global y tags por proyecto con UI;
   tema claro/oscuro persistido. (Fase 6 `/deliver` aún pendiente.)
+- **Tareas recurrentes** ([[ADR-014 Tareas recurrentes]], US 4.1): periodicidad
+  por tarea (`diaria`, `días hábiles`, `semanal`, `mensual`), check que registra
+  completados con contador del período, historial en el drawer, completado desde
+  «Tareas del día» y backup v4 con `todo_completions`.
 
 ### Arquitectura
 

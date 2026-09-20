@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import type { Todo, TodoStatus, Priority, Urgency, Tag } from '../types'
-import { STATUS_LABELS, PRIORITY_LABELS, URGENCY_LABELS, paletteHex } from '../types'
+import type { Todo, TodoStatus, TodoRecurrence, Priority, Urgency, Tag } from '../types'
+import { STATUS_LABELS, PRIORITY_LABELS, URGENCY_LABELS, RECURRENCE_LABELS, paletteHex } from '../types'
+import { isRecurring, recurrencePeriodLabel } from '../lib/recurrence'
+import type { TodoCompletionState } from '../hooks/useTodoCompletions'
 import { BlockEditor } from './BlockEditor'
 import {
   Button,
@@ -21,6 +23,9 @@ interface TodoDrawerProps {
   projectTags?: Tag[]
   onUpdate: (todoId: string, updates: Partial<Todo>) => void
   onDelete: () => void
+  completionState?: TodoCompletionState
+  onRecurrenceChange: (recurrence: TodoRecurrence) => void
+  onRemoveCompletion: (completionId: string) => void
 }
 
 const DRAWER_WIDTH_KEY = 'tododex.drawerWidth'
@@ -29,8 +34,10 @@ const DRAWER_DEFAULT_WIDTH = 520
 const CONTENT_DEBOUNCE_MS = 800
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }))
+const RECURRING_STATUS_OPTIONS = STATUS_OPTIONS.filter((option) => option.value !== 'done')
 const PRIORITY_OPTIONS = Object.entries(PRIORITY_LABELS).map(([value, label]) => ({ value, label }))
 const URGENCY_OPTIONS = Object.entries(URGENCY_LABELS).map(([value, label]) => ({ value, label }))
+const RECURRENCE_OPTIONS = Object.entries(RECURRENCE_LABELS).map(([value, label]) => ({ value, label }))
 
 export function TodoDrawer({
   open,
@@ -40,6 +47,9 @@ export function TodoDrawer({
   projectTags = [],
   onUpdate,
   onDelete,
+  completionState,
+  onRecurrenceChange,
+  onRemoveCompletion,
 }: TodoDrawerProps) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [width, setWidth] = useState(() => {
@@ -156,6 +166,18 @@ export function TodoDrawer({
   }
 
   const isExpired = todo?.expirationDate && new Date(todo.expirationDate) < new Date()
+  const recurring = todo ? isRecurring(todo.recurrence) : false
+  const completionItems = completionState?.items ?? []
+
+  const formatDateTime = (value: Date) => {
+    const date = value instanceof Date ? value : new Date(value)
+    return date.toLocaleString('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
 
   const commitTitle = () => {
     if (!todo) return
@@ -236,7 +258,7 @@ export function TodoDrawer({
                 <Select
                   label="Estado"
                   labelBgClass="bg-surface-container-low"
-                  options={STATUS_OPTIONS}
+                  options={recurring ? RECURRING_STATUS_OPTIONS : STATUS_OPTIONS}
                   value={todo.status}
                   onChange={(value) => onUpdate(todo.id, { status: value as TodoStatus })}
                 />
@@ -253,6 +275,13 @@ export function TodoDrawer({
                   options={URGENCY_OPTIONS}
                   value={todo.urgency}
                   onChange={(value) => onUpdate(todo.id, { urgency: value as Urgency })}
+                />
+                <Select
+                  label="Repetición"
+                  labelBgClass="bg-surface-container-low"
+                  options={RECURRENCE_OPTIONS}
+                  value={todo.recurrence}
+                  onChange={(value) => onRecurrenceChange(value as TodoRecurrence)}
                 />
                 <Field label="Épica">
                   {projectEpic ? (
@@ -329,6 +358,43 @@ export function TodoDrawer({
                       {tag.name}
                     </span>
                   ))}
+                </div>
+              )}
+
+              {recurring && (
+                <div className="flex flex-col gap-2 px-6 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-label-large text-on-surface-variant">Historial</span>
+                    <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-label-small text-on-surface-variant">
+                      {completionState?.count ?? 0} {recurrencePeriodLabel(todo.recurrence)}
+                    </span>
+                  </div>
+                  {completionItems.length === 0 ? (
+                    <p className="text-body-small text-on-surface-variant">
+                      Aún no hay completados registrados.
+                    </p>
+                  ) : (
+                    <div className="flex max-h-40 flex-col gap-1 overflow-y-auto pr-1">
+                      {completionItems.slice(0, 20).map((completion) => (
+                        <div
+                          key={completion.id}
+                          className="flex items-center justify-between gap-2 rounded-xs bg-surface-container px-3 py-1.5"
+                        >
+                          <span className="flex items-center gap-2 text-body-small text-on-surface-variant">
+                            <Icon name="check_circle" size={16} className="text-primary" />
+                            {formatDateTime(completion.completedAt)}
+                          </span>
+                          <IconButton
+                            icon="delete"
+                            label="Eliminar completado"
+                            size="sm"
+                            className="hover:text-error"
+                            onClick={() => onRemoveCompletion(completion.id)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

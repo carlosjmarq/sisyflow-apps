@@ -1,16 +1,30 @@
 import type { Database, Json } from '../types/supabase'
 import { DEFAULT_HEX } from '../types'
-import type { Epic, Priority, Project, ProjectStatus, Tag, TagColor, Todo, TodoStatus, Urgency } from '../types'
+import type {
+  Epic,
+  Priority,
+  Project,
+  ProjectStatus,
+  Tag,
+  TagColor,
+  Todo,
+  TodoCompletion,
+  TodoRecurrence,
+  TodoStatus,
+  Urgency,
+} from '../types'
 
 export type EpicRow = Database['public']['Tables']['epics']['Row']
 export type ProjectRow = Database['public']['Tables']['projects']['Row']
 export type TodoRow = Database['public']['Tables']['todos']['Row']
 export type TagRow = Database['public']['Tables']['tags']['Row']
+export type TodoCompletionRow = Database['public']['Tables']['todo_completions']['Row']
 
 export type EpicInsert = Database['public']['Tables']['epics']['Insert']
 export type ProjectInsert = Database['public']['Tables']['projects']['Insert']
 export type TodoInsert = Database['public']['Tables']['todos']['Insert']
 export type TagInsert = Database['public']['Tables']['tags']['Insert']
+export type TodoCompletionInsert = Database['public']['Tables']['todo_completions']['Insert']
 
 export type ProjectUpdate = Database['public']['Tables']['projects']['Update']
 export type TodoUpdate = Database['public']['Tables']['todos']['Update']
@@ -75,6 +89,15 @@ export function mapTodo(row: TodoRow): Todo {
     updatedAt: row.updated_at ? new Date(row.updated_at) : undefined,
     expirationDate: row.expiration_date ? new Date(row.expiration_date) : null,
     completedAt: row.completed_at ? new Date(row.completed_at) : null,
+    recurrence: row.recurrence as TodoRecurrence,
+  }
+}
+
+export function mapTodoCompletion(row: TodoCompletionRow): TodoCompletion {
+  return {
+    id: row.id,
+    todoId: row.todo_id,
+    completedAt: new Date(row.completed_at),
   }
 }
 
@@ -113,6 +136,19 @@ export function todoInsertFromDomain(todo: Todo, userId: string): TodoInsert {
     completed_at: todo.completedAt ? toIso(todo.completedAt) : null,
     created_at: toIso(todo.createdAt),
     updated_at: todo.updatedAt ? toIso(todo.updatedAt) : new Date().toISOString(),
+    recurrence: todo.recurrence,
+  }
+}
+
+export function todoCompletionInsertFromDomain(
+  completion: TodoCompletion,
+  userId: string,
+): TodoCompletionInsert {
+  return {
+    id: completion.id,
+    todo_id: completion.todoId,
+    user_id: userId,
+    completed_at: toIso(completion.completedAt),
   }
 }
 
@@ -126,6 +162,7 @@ export function todoUpdateFromDomain(updates: Partial<Todo>): TodoUpdate {
   }
   if (updates.content !== undefined) row.content = parseContent(updates.content)
   if (updates.contentFormat !== undefined) row.content_format = updates.contentFormat
+  if (updates.recurrence !== undefined) row.recurrence = updates.recurrence
   if (updates.status !== undefined) {
     row.status = updates.status
     row.completed_at = updates.status === 'done' ? toIso(updates.completedAt ?? new Date()) : null

@@ -61,11 +61,27 @@ Pausar/completar oculta tareas incompletas del día a día sin borrar historial.
 | `expiration_date` | `timestamptz` | nullable (paridad) |
 | `content` | `jsonb` | bloques BlockNote; default `'[]'` (paridad) |
 | `content_format` | `text` | `'blocknote'` (paridad; legacy `'markdown'`) |
+| `recurrence` | `todo_recurrence` enum | `none`, `daily`, `weekdays`, `weekly`, `monthly`; default `none` (US 4.1) |
 | `completed_at` | `timestamptz` | nullable; **automático** al pasar a `done` (US 2.3), se limpia al salir |
 | `created_at` | `timestamptz` | `default now()` |
 | `updated_at` | `timestamptz` | paridad (Dexie v4) |
 
 `is_completed` no se almacena: equivale a `status = 'done'`.
+
+#### `todo_completions` — historial de tareas recurrentes (US 4.1)
+
+| Columna | Tipo | Notas |
+| --- | --- | --- |
+| `id` | `uuid` PK | `default gen_random_uuid()` |
+| `todo_id` | `uuid` | FK → `todos`, `on delete cascade` |
+| `user_id` | `uuid` | FK → `auth.users`, RLS |
+| `completed_at` | `timestamptz` | `default now()`; cada empuje registra una fila |
+| `created_at` | `timestamptz` | `default now()` |
+
+Un trigger valida que solo se complete una tarea recurrente del mismo usuario
+([[ADR-014 Tareas recurrentes]]). Las tareas recurrentes no pasan a `done` ni
+escriben `completed_at` en `todos`: su estado "hecho" se calcula por período de
+calendario en el cliente (día, semana desde el lunes, mes desde el día 1).
 
 #### `tags` — por proyecto (paridad)
 
@@ -79,10 +95,12 @@ Pausar/completar oculta tareas incompletas del día a día sin borrar historial.
 
 ### Vista `daily_epic_logs` (US 3.1)
 
-- Devuelve `[day, epic_id, completed_count]` agrupando tareas con `completed_at`
-  no nulo, uniendo `todos` → `projects`.
+- Devuelve `[day, epic_id, completed_count]` agrupando la **unión** de
+  `todos.completed_at` (tareas de una vez) y `todo_completions.completed_at`
+  (tareas recurrentes), uniendo `todos` → `projects`.
 - `security_invoker = true` para que respete RLS.
-- Índices de apoyo: `todos(completed_at)`, `todos(project_id)`, `projects(epic_id)`.
+- Índices de apoyo: `todos(completed_at)`, `todos(project_id)`, `projects(epic_id)`,
+  `todo_completions(completed_at)`, `todo_completions(todo_id, completed_at desc)`.
 
 ### Funciones de gamificación (Fase 5)
 
@@ -128,14 +146,18 @@ Todas las tablas: `user_id = auth.uid()` en `select`, `insert`, `update`, `delet
 - Fase 4: la FK `projects.epic_id` pasa a `on delete restrict`
   ([[ADR-010 Ciclo de vida de proyectos y vista del dia]]): borrar una épica con
   proyectos queda bloqueado para proteger el historial.
+- Tareas recurrentes (US 4.1, [[ADR-014 Tareas recurrentes]]): migración
+  `20260920120000_recurring_todos.sql` (enum `todo_recurrence`, tabla
+  `todo_completions`, trigger de integridad y unión en la gamificación).
 
 ## Pendientes
 
 - [x] Escribir el SQL definitivo (migraciones) en `/backend` (2026-09-13).
-- [ ] Resolver la asignación de proyecto→épica para proyectos con varias épicas
-      (ADR-007) durante la migración Sísifo (fase `/cloud`).
-- [ ] Confirmar la zona horaria del corte diario para `daily_epic_logs`
-      (fase `/gamification`).
+- [x] Resolver la asignación de proyecto→épica para proyectos con varias épicas
+      (ADR-007) durante la migración Sísifo: se asigna la épica más antigua y se
+      reporta el proyecto como ambiguo (fase `/cloud`).
+- [x] Confirmar la zona horaria del corte diario para `daily_epic_logs`
+      (fase `/gamification`, ADR-011): zona del cliente vía RPC.
 
 ## Relaciones
 

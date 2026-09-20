@@ -6,6 +6,7 @@ export const todoStatusSchema = z.enum(['backlog', 'todo', 'in-progress', 'done'
 export const prioritySchema = z.enum(['low', 'medium', 'high', 'critical'])
 export const urgencySchema = z.enum(['low', 'medium', 'high', 'critical'])
 export const contentFormatSchema = z.enum(['blocknote', 'markdown'])
+export const recurrenceSchema = z.enum(['none', 'daily', 'weekdays', 'weekly', 'monthly'])
 
 export function parseTodoStatus(value: string): 'backlog' | 'todo' | 'in-progress' | 'done' | 'cancelled' {
   const parsed = todoStatusSchema.safeParse(value)
@@ -34,6 +35,14 @@ export function parseUrgency(value: string): 'low' | 'medium' | 'high' | 'critic
 export function parseContentFormat(value: string): 'blocknote' | 'markdown' {
   const parsed = contentFormatSchema.safeParse(value)
   if (!parsed.success) fail(`Formato inválido "${value}". Válidos: blocknote, markdown`, 2)
+  return parsed.data
+}
+
+export function parseRecurrence(
+  value: string,
+): 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly' {
+  const parsed = recurrenceSchema.safeParse(value)
+  if (!parsed.success) fail(`Recurrencia inválida "${value}". Válidas: ${recurrenceSchema.options.join(', ')}`, 2)
   return parsed.data
 }
 

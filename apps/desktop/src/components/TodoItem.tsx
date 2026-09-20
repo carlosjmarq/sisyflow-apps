@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Card, ConfirmDialog, Icon, IconButton, TruncatedTooltip } from './ui'
+import { isRecurring } from '../lib/recurrence'
 import {
   PRIORITY_COLORS,
   PRIORITY_LABELS,
+  RECURRENCE_LABELS,
   STATUS_LABELS,
   URGENCY_LABELS,
   type Todo,
@@ -25,6 +27,11 @@ export function TodoItem({
   onClick,
   onStatusChange,
   onDelete,
+  completionCount = 0,
+  completionLabel = '',
+  completionLastAt,
+  onComplete,
+  onUndoCompletion,
 }: {
   todo: Todo
   epicName?: string
@@ -32,10 +39,17 @@ export function TodoItem({
   onClick: () => void
   onStatusChange: (status: TodoStatus) => void
   onDelete: () => void
+  completionCount?: number
+  completionLabel?: string
+  completionLastAt?: Date | null
+  onComplete?: () => void
+  onUndoCompletion?: () => void
 }) {
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const isDone = todo.status === 'done'
+  const recurring = isRecurring(todo.recurrence)
+  const isDone = !recurring && todo.status === 'done'
   const isCancelled = todo.status === 'cancelled'
+  const isChecked = recurring ? completionCount > 0 : isDone
   const nextStatus: TodoStatus = isDone ? 'todo' : 'done'
 
   const formatDate = (value: Date | null) => {
@@ -56,18 +70,19 @@ export function TodoItem({
         }`}
       >
         <button
-          aria-label={isDone ? 'Marcar como pendiente' : 'Marcar como completada'}
+          aria-label={recurring ? 'Registrar completado' : isDone ? 'Marcar como pendiente' : 'Marcar como completada'}
           onClick={(event) => {
             event.stopPropagation()
-            onStatusChange(nextStatus)
+            if (recurring) onComplete?.()
+            else onStatusChange(nextStatus)
           }}
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-            isDone
+            isChecked
               ? 'border-primary bg-primary text-on-primary'
               : 'border-outline text-transparent hover:border-primary'
           }`}
         >
-          {isDone ? (
+          {isChecked ? (
             <motion.span
               initial={{ scale: 0.4, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -97,6 +112,21 @@ export function TodoItem({
             <span className={`rounded-full px-2 py-0.5 text-label-small ${STATUS_BADGES[todo.status]}`}>
               {STATUS_LABELS[todo.status]}
             </span>
+            {recurring && (
+              <span className="flex items-center gap-1 rounded-full bg-tertiary-container px-2 py-0.5 text-label-small text-on-tertiary-container">
+                <Icon name="repeat" size={14} />
+                {RECURRENCE_LABELS[todo.recurrence]}
+              </span>
+            )}
+            {recurring && completionCount > 0 && (
+              <span
+                className="flex items-center gap-1 rounded-full bg-primary-container px-2 py-0.5 text-label-small text-on-primary-container"
+                title={completionLastAt ? `Último: ${formatDate(completionLastAt)}` : undefined}
+              >
+                <Icon name="check" size={14} />
+                ×{completionCount} {completionLabel}
+              </span>
+            )}
             {epicName && (
               <span className="flex items-center gap-1 rounded-full bg-surface-container px-2 py-0.5 text-label-small text-on-surface-variant">
                 {epicColor && (
@@ -139,6 +169,18 @@ export function TodoItem({
         </div>
 
         <div className="flex shrink-0 items-center">
+          {recurring && completionCount > 0 && onUndoCompletion && (
+            <IconButton
+              icon="undo"
+              label="Deshacer último completado"
+              size="sm"
+              className="text-on-surface-variant hover:text-primary"
+              onClick={(event) => {
+                event.stopPropagation()
+                onUndoCompletion()
+              }}
+            />
+          )}
           <IconButton
             icon="delete"
             label="Eliminar tarea"

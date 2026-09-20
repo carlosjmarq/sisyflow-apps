@@ -1,37 +1,40 @@
 import { supabase } from '../lib/supabase'
 import type { LegacyData } from '../db/database'
-import type { EpicInsert, ProjectInsert, TagInsert, TodoInsert } from '../data/mappers'
+import type { EpicInsert, ProjectInsert, TagInsert, TodoCompletionInsert, TodoInsert } from '../data/mappers'
 import { buildMigrationRows, upsertInChunks } from '../migration/sisifo'
 
-const BACKUP_VERSION = 3
+const BACKUP_VERSION = 4
 
-interface BackupV3 {
+interface BackupV4 {
   version: number
   exportedAt: string
   epics: unknown[]
   projects: unknown[]
   todos: unknown[]
   tags: unknown[]
+  completions: unknown[]
 }
 
 export async function exportBackup(): Promise<void> {
-  const [epics, projects, todos, tags] = await Promise.all([
+  const [epics, projects, todos, tags, completions] = await Promise.all([
     supabase.from('epics').select('*'),
     supabase.from('projects').select('*'),
     supabase.from('todos').select('*'),
     supabase.from('tags').select('*'),
+    supabase.from('todo_completions').select('*'),
   ])
 
-  const error = epics.error ?? projects.error ?? todos.error ?? tags.error
+  const error = epics.error ?? projects.error ?? todos.error ?? tags.error ?? completions.error
   if (error) throw new Error(`No se pudo exportar el backup: ${error.message}`)
 
-  const backup: BackupV3 = {
+  const backup: BackupV4 = {
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
     epics: epics.data ?? [],
     projects: projects.data ?? [],
     todos: todos.data ?? [],
     tags: tags.data ?? [],
+    completions: completions.data ?? [],
   }
 
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
@@ -54,16 +57,33 @@ export async function importBackup(
     todos?: unknown
     epics?: unknown
     tags?: unknown
+    completions?: unknown
   }
+
+  const withUser = <T extends { user_id?: string }>(rows: T[]): T[] =>
+    rows.map((row) => ({ ...row, user_id: userId }))
 
   if (parsed.version === BACKUP_VERSION) {
     const epics = requireArray(parsed.epics, 'epics')
     const projects = requireArray(parsed.projects, 'projects')
     const todos = requireArray(parsed.todos, 'todos')
     const tags = requireArray(parsed.tags, 'tags')
+    const completions = requireArray(parsed.completions, 'completions')
 
-    const withUser = <T extends { user_id?: string }>(rows: T[]): T[] =>
-      rows.map((row) => ({ ...row, user_id: userId }))
+    const options = { onConflict: 'id', ignoreDuplicates: false }
+    await upsertInChunks('Épicas', withUser(epics as EpicInsert[]), (c) => supabase.from('epics').upsert(c, options), onProgress)
+    await upsertInChunks('Proyectos', withUser(projects as ProjectInsert[]), (c) => supabase.from('projects').upsert(c, options), onProgress)
+    await upsertInChunks('Tareas', withUser(todos as TodoInsert[]), (c) => supabase.from('todos').upsert(c, options), onProgress)
+    await upsertInChunks('Completados', withUser(completions as TodoCompletionInsert[]), (c) => supabase.from('todo_completions').upsert(c, options), onProgress)
+    await upsertInChunks('Tags', withUser(tags as TagInsert[]), (c) => supabase.from('tags').upsert(c, options), onProgress)
+    return
+  }
+
+  if (parsed.version === 3) {
+    const epics = requireArray(parsed.epics, 'epics')
+    const projects = requireArray(parsed.projects, 'projects')
+    const todos = requireArray(parsed.todos, 'todos')
+    const tags = requireArray(parsed.tags, 'tags')
 
     const options = { onConflict: 'id', ignoreDuplicates: false }
     await upsertInChunks('Épicas', withUser(epics as EpicInsert[]), (c) => supabase.from('epics').upsert(c, options), onProgress)

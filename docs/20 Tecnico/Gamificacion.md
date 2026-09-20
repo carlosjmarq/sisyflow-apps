@@ -18,7 +18,8 @@ backlog ([[US's for personal development project]]) y depende del modelo
 ### US 3.1 — Vista `daily_epic_logs`
 
 - Vista SQL en Supabase: agrupa por día y épica la cantidad de tareas completadas
-  (`completed_at` no nulo), uniendo `todos` → `projects`.
+  (`completed_at` no nulo), uniendo `todos` → `projects`. Desde US 4.1 también
+  cuenta los completados recurrentes de `todo_completions`.
 - Salida limpia: `[fecha, epic_id, cantidad_completada]`.
 - Debe ser eficiente: índices en `completed_at` y `project_id`; `security_invoker = true`.
 - La app usa la función `daily_epic_logs_tz(p_tz, p_days)` para cortar el día en
@@ -72,6 +73,18 @@ backlog ([[US's for personal development project]]) y depende del modelo
 - La ruta `/progress` se eliminó: su contenido se integró a Inicio.
 - Migración `20260913224500_global_streak.sql`; 9 tests pgTAP nuevos (47 en total).
   Ver [[ADR-012 Rediseno UI Material Design 3]].
+
+### Tareas recurrentes (US 4.1, ADR-014)
+
+- Los completados de tareas recurrentes (`todo_completions`) alimentan la
+  actividad: la vista `daily_epic_logs` y las funciones `daily_epic_logs_tz`,
+  `epic_streaks` y `streak_global` cuentan la unión de `todos.completed_at` y
+  `todo_completions.completed_at`.
+- Cada clic suma 1 a la intensidad del heatmap; la racha sigue siendo binaria
+  por día (hubo actividad o no) con las mismas reglas de weekend freeze.
+- Los períodos de calendario (día/semana desde el lunes/mes desde el día 1) se
+  calculan en el cliente; SQL solo agrega marcas de tiempo por día local.
+- 12 aserciones pgTAP nuevas (`recurring_test.sql`, 61 en total).
 
 ### Decisiones tomadas
 

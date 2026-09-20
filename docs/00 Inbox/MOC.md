@@ -25,6 +25,9 @@ curso: el backend se desplegó en el proyecto Supabase de producción `sisyflow`
 ([[Supabase local y remoto]], [[Builds de escritorio (Windows)]]). Además se
 añadió el **CLI de SisyFlow** (`apps/cli/`, binario `sisyflow`) para automatizar
 el CRUD de épicas, proyectos y tareas desde la consola ([[ADR-013 CLI de SisyFlow]]).
+Sobre esa base se implementaron las **tareas recurrentes** (US 4.1, 2026-09-20):
+periodicidad por tarea y un historial de completados que alimenta el heatmap y
+las rachas ([[ADR-014 Tareas recurrentes]]).
 El roadmap de fases vive en [[Fases del proyecto]].
 
 ## 00 Inbox
@@ -47,6 +50,7 @@ El roadmap de fases vive en [[Fases del proyecto]].
 - [[ADR-011 Gamificacion zona horaria rachas y heatmap]]
 - [[ADR-012 Rediseno UI Material Design 3]]
 - [[ADR-013 CLI de SisyFlow]] — Aceptado
+- [[ADR-014 Tareas recurrentes]] — Aceptado
 
 ## 20 Tecnico
 

@@ -1,11 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { useDayTodos, type DayTodo } from '../hooks/useDayTodos'
-import { PRIORITY_COLORS, PRIORITY_LABELS, STATUS_LABELS } from '../types'
-import { Card, Icon, Skeleton } from './ui'
+import type { TodoCompletionState } from '../hooks/useTodoCompletions'
+import { isRecurring, recurrencePeriodLabel } from '../lib/recurrence'
+import { PRIORITY_COLORS, PRIORITY_LABELS, RECURRENCE_LABELS, STATUS_LABELS } from '../types'
+import { Card, Icon, IconButton, Skeleton } from './ui'
 
-export function DayView() {
+export function DayView({ onActivity }: { onActivity?: () => void }) {
   const navigate = useNavigate()
-  const { todos, loading } = useDayTodos()
+  const { todos, loading, completionsForTodo, completeTodo, undoLastCompletion } = useDayTodos()
 
   if (loading) {
     return (
@@ -68,7 +70,16 @@ export function DayView() {
               <DayTaskRow
                 key={todo.id}
                 todo={todo}
+                completion={completionsForTodo(todo.id)}
                 onOpen={() => navigate(`/project/${projectId}`, { state: { openTodoId: todo.id } })}
+                onComplete={() => {
+                  void completeTodo(todo.id).then((id) => {
+                    if (id) onActivity?.()
+                  })
+                }}
+                onUndo={() => {
+                  void undoLastCompletion(todo.id).then(() => onActivity?.())
+                }}
               />
             ))}
           </div>
@@ -78,7 +89,21 @@ export function DayView() {
   )
 }
 
-function DayTaskRow({ todo, onOpen }: { todo: DayTodo; onOpen: () => void }) {
+function DayTaskRow({
+  todo,
+  completion,
+  onOpen,
+  onComplete,
+  onUndo,
+}: {
+  todo: DayTodo
+  completion: TodoCompletionState
+  onOpen: () => void
+  onComplete: () => void
+  onUndo: () => void
+}) {
+  const recurring = isRecurring(todo.recurrence)
+  const count = completion.count
   const isExpired = todo.expirationDate && new Date(todo.expirationDate) < new Date()
   const dueLabel = todo.expirationDate
     ? new Date(todo.expirationDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
@@ -91,16 +116,45 @@ function DayTaskRow({ todo, onOpen }: { todo: DayTodo; onOpen: () => void }) {
       className="flex items-center gap-3 px-4 py-3"
       onClick={onOpen}
     >
-      <span
-        className="h-2.5 w-2.5 shrink-0 rounded-full"
-        style={{ backgroundColor: PRIORITY_COLORS[todo.priority] }}
-      />
+      {recurring ? (
+        <button
+          aria-label="Registrar completado"
+          onClick={(event) => {
+            event.stopPropagation()
+            onComplete()
+          }}
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+            count > 0
+              ? 'border-primary bg-primary text-on-primary'
+              : 'border-outline text-transparent hover:border-primary'
+          }`}
+        >
+          <Icon name="check" size={14} />
+        </button>
+      ) : (
+        <span
+          className="h-2.5 w-2.5 shrink-0 rounded-full"
+          style={{ backgroundColor: PRIORITY_COLORS[todo.priority] }}
+        />
+      )}
       <div className="min-w-0 flex-1">
         <p className="truncate text-body-medium text-on-surface">{todo.title}</p>
         <div className="mt-0.5 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-surface-container px-2 py-0.5 text-label-small text-on-surface-variant">
             {STATUS_LABELS[todo.status]}
           </span>
+          {recurring && (
+            <span className="flex items-center gap-1 rounded-full bg-tertiary-container px-2 py-0.5 text-label-small text-on-tertiary-container">
+              <Icon name="repeat" size={14} />
+              {RECURRENCE_LABELS[todo.recurrence]}
+            </span>
+          )}
+          {recurring && count > 0 && (
+            <span className="flex items-center gap-1 rounded-full bg-primary-container px-2 py-0.5 text-label-small text-on-primary-container">
+              <Icon name="check" size={14} />
+              ×{count} {recurrencePeriodLabel(todo.recurrence)}
+            </span>
+          )}
           <span className="text-label-small text-on-surface-variant">
             {PRIORITY_LABELS[todo.priority]}
           </span>
@@ -118,6 +172,18 @@ function DayTaskRow({ todo, onOpen }: { todo: DayTodo; onOpen: () => void }) {
           )}
         </div>
       </div>
+      {recurring && count > 0 && (
+        <IconButton
+          icon="undo"
+          label="Deshacer último completado"
+          size="sm"
+          className="text-on-surface-variant hover:text-primary"
+          onClick={(event) => {
+            event.stopPropagation()
+            onUndo()
+          }}
+        />
+      )}
       <Icon name="chevron_right" size={20} className="shrink-0 text-on-surface-variant" />
     </Card>
   )

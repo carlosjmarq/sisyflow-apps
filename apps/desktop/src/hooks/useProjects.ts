@@ -13,7 +13,19 @@ import {
   type ProjectUpdatableFields,
   type ProjectWithDetailsRow,
 } from '../data/mappers'
-import type { Epic, Priority, Project, Tag, TagColor, Todo, TodoSortKey, TodoStatus, Urgency } from '../types'
+import type {
+  Epic,
+  Priority,
+  Project,
+  Tag,
+  TagColor,
+  Todo,
+  TodoRecurrence,
+  TodoSortKey,
+  TodoStatus,
+  Urgency,
+} from '../types'
+import { useTodoCompletions } from './useTodoCompletions'
 
 const priorityOrder: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 }
 const statusOrder: Record<string, number> = { 'todo': 1, 'in-progress': 2, 'backlog': 3, 'done': 4, 'cancelled': 5 }
@@ -141,6 +153,7 @@ export interface NewTodoInput {
   contentFormat: 'blocknote'
   createdAt: Date
   expirationDate: Date | null
+  recurrence: TodoRecurrence
 }
 
 export function useProjectTodos(projectId: string | undefined, sortBy: TodoSortKey = 'createdAt') {
@@ -148,6 +161,12 @@ export function useProjectTodos(projectId: string | undefined, sortBy: TodoSortK
   const { showToast } = useToast()
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
+  const {
+    forTodo: completionsForTodo,
+    complete: completeTodo,
+    remove: removeCompletion,
+    undoLast: undoLastCompletion,
+  } = useTodoCompletions(todos)
 
   const loadTodos = useCallback(async () => {
     if (!projectId || !user) {
@@ -191,6 +210,7 @@ export function useProjectTodos(projectId: string | undefined, sortBy: TodoSortK
       updatedAt: now,
       expirationDate: input.expirationDate,
       completedAt: input.status === 'done' ? now : null,
+      recurrence: input.recurrence,
     }
     setTodos((prev) => sortTodos([todo, ...prev], sortBy))
 
@@ -221,8 +241,30 @@ export function useProjectTodos(projectId: string | undefined, sortBy: TodoSortK
       console.error(error)
       setTodos(previous)
       showToast('No se pudo guardar el cambio')
+      return false
     }
+    return true
   }, [todos, showToast, sortBy])
+
+  /**
+   * Cambia la recurrencia de una tarea (US 4.1). Si la tarea ya estaba
+   * completada, su `completedAt` se conserva como primer completado del
+   * historial y la tarea vuelve a pendiente (ADR-014).
+   */
+  const changeRecurrence = useCallback(async (id: string, recurrence: TodoRecurrence) => {
+    const todo = todos.find((item) => item.id === id)
+    if (!todo || todo.recurrence === recurrence) return
+
+    const previousCompletedAt = todo.completedAt ?? null
+    const wasDone = todo.status === 'done'
+    const updated = await updateTodo(id, { recurrence })
+    if (!updated) return
+
+    if (recurrence !== 'none' && wasDone && previousCompletedAt) {
+      await completeTodo(id, previousCompletedAt)
+      await updateTodo(id, { status: 'todo' })
+    }
+  }, [todos, updateTodo, completeTodo])
 
   const deleteTodo = useCallback(async (id: string) => {
     const previous = todos
@@ -236,7 +278,19 @@ export function useProjectTodos(projectId: string | undefined, sortBy: TodoSortK
     }
   }, [todos, showToast])
 
-  return { todos, loading, createTodo, updateTodo, deleteTodo, reload: loadTodos }
+  return {
+    todos,
+    loading,
+    createTodo,
+    updateTodo,
+    deleteTodo,
+    reload: loadTodos,
+    completionsForTodo,
+    completeTodo,
+    removeCompletion,
+    undoLastCompletion,
+    changeRecurrence,
+  }
 }
 
 export function useEpics() {

@@ -128,6 +128,38 @@ export type Database = {
           },
         ]
       }
+      todo_completions: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          todo_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          todo_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          todo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todo_completions_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todos: {
         Row: {
           completed_at: string | null
@@ -138,6 +170,7 @@ export type Database = {
           id: string
           priority: Database["public"]["Enums"]["task_priority"]
           project_id: string
+          recurrence: Database["public"]["Enums"]["todo_recurrence"]
           status: Database["public"]["Enums"]["todo_status"]
           title: string
           updated_at: string
@@ -153,6 +186,7 @@ export type Database = {
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id: string
+          recurrence?: Database["public"]["Enums"]["todo_recurrence"]
           status?: Database["public"]["Enums"]["todo_status"]
           title: string
           updated_at?: string
@@ -168,6 +202,7 @@ export type Database = {
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id?: string
+          recurrence?: Database["public"]["Enums"]["todo_recurrence"]
           status?: Database["public"]["Enums"]["todo_status"]
           title?: string
           updated_at?: string
@@ -192,15 +227,7 @@ export type Database = {
           day: string | null
           epic_id: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "projects_epic_id_fkey"
-            columns: ["epic_id"]
-            isOneToOne: false
-            referencedRelation: "epics"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
@@ -231,6 +258,7 @@ export type Database = {
     Enums: {
       project_status: "active" | "paused" | "completed"
       task_priority: "low" | "medium" | "high" | "critical"
+      todo_recurrence: "none" | "daily" | "weekdays" | "weekly" | "monthly"
       todo_status: "backlog" | "todo" | "in-progress" | "done" | "cancelled"
     }
     CompositeTypes: {
@@ -364,6 +392,7 @@ export const Constants = {
     Enums: {
       project_status: ["active", "paused", "completed"],
       task_priority: ["low", "medium", "high", "critical"],
+      todo_recurrence: ["none", "daily", "weekdays", "weekly", "monthly"],
       todo_status: ["backlog", "todo", "in-progress", "done", "cancelled"],
     },
   },
