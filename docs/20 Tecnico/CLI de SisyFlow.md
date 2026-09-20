@@ -81,7 +81,8 @@ Para usar `sisyflow` como comando de sistema en cualquier terminal:
 
 Para actualizar tras un cambio: `pnpm --filter sisyflow-cli build` + repetir el
 paso 2. El comando queda en `%LOCALAPPDATA%\pnpm` (o el `global-bin-dir` de
-pnpm), que ya está en el PATH de Windows.
+pnpm), que ya está en el PATH de Windows. Actualizado el 2026-09-20 con
+`todo check` y `--recurrence`.
 
 Nota: la sesión (`~/.sisyflow/session.json`) es única; si alternas entre el
 Supabase local y producción, vuelve a ejecutar `login` al cambiar de entorno.

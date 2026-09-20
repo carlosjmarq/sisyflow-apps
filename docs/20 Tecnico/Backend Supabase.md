@@ -98,7 +98,8 @@ migración Sísifo (US 1.2).
       `sisyflow`, ref `djjttyejsbicmrvmgyep`, us-east-1).
 - [x] Migración de tareas recurrentes (US 4.1, ADR-014) aplicada en local
       (2026-09-20): `db reset` limpio, 61 tests pgTAP en verde y advisors sin
-      issues; pendiente `db push` al remoto ([[Supabase local y remoto]]).
+      issues; aplicada también al remoto con `db push`
+      ([[Supabase local y remoto]]).
 
 ## Relaciones
 

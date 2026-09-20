@@ -40,6 +40,9 @@ reproducible ([[App de escritorio (base TodoDex)]]).
   que electron-builder resuelva el binario con el layout hoisted de pnpm.
 - Primer instalador de producción generado el 2026-09-13 (apunta a `sisyflow`
   en us-east-1).
+- Segundo instalador de producción generado el 2026-09-20 con las tareas
+  recurrentes (US 4.1, [[ADR-014 Tareas recurrentes]]): bundle verificado con
+  el project-ref de producción y sin la URL local.
 
 ### Deep link de autenticación (`sisyflow://`)
 

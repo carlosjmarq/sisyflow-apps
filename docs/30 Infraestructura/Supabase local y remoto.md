@@ -64,9 +64,12 @@ la app. Ver [[ADR-005 Supabase como backend]] y [[Backend Supabase]].
 - [x] Crear el proyecto remoto y aplicar las migraciones (2026-09-13).
 - [x] Configurar Site URL/redirects de Auth con el deep link
       `sisyflow://auth/callback` (2026-09-13).
-- [ ] Aplicar al remoto la migración de tareas recurrentes
-      (`20260920120000_recurring_todos.sql`) con `supabase db push` y regenerar
-      el instalador (2026-09-20, pendiente de aprobación).
+- [x] Migración de tareas recurrentes (`20260920120000_recurring_todos.sql`)
+      aplicada al remoto con `supabase db push` (2026-09-20); el historial de
+      migraciones local y remoto quedó en sync.
+- [x] Instalador de producción regenerado con tareas recurrentes
+      (`SisyFlow-Windows-0.1.0-Setup.exe`, 2026-09-20;
+      [[Builds de escritorio (Windows)]]).
 - [ ] Definir rutina de respaldo (dump programado o export manual).
 
 ## Relaciones
