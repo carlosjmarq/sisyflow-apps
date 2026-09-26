@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/events.dart';
 import '../../core/feedback.dart';
+import '../../core/realtime.dart';
 import '../../data/mappers.dart';
 import '../../data/models.dart';
 import '../../data/recurrence.dart';
@@ -31,12 +32,20 @@ class ProjectViewModel extends ChangeNotifier {
     required TagRepository tagRepository,
     required CompletionRepository completionRepository,
     required this.dataChanges,
+    required this.realtimeBus,
     required this.projectId,
   }) : _auth = authRepository,
        _projects = projectRepository,
        _todos = todoRepository,
        _tags = tagRepository,
-       _completions = completionRepository;
+       _completions = completionRepository {
+    _unsubscribeRealtime = realtimeBus.watchRefresh(const {
+      DbTable.projects,
+      DbTable.todos,
+      DbTable.tags,
+      DbTable.todoCompletions,
+    }, refresh);
+  }
 
   final AuthRepository _auth;
   final ProjectRepository _projects;
@@ -44,7 +53,9 @@ class ProjectViewModel extends ChangeNotifier {
   final TagRepository _tags;
   final CompletionRepository _completions;
   final DataChangeNotifier dataChanges;
+  final RealtimeBus realtimeBus;
   final String projectId;
+  VoidCallback? _unsubscribeRealtime;
 
   Project? project;
   List<Todo> todos = [];
@@ -55,9 +66,16 @@ class ProjectViewModel extends ChangeNotifier {
   TodoStatus? filterStatus;
   TaskPriority? filterPriority;
 
-  Future<void> load() async {
-    loading = true;
-    notifyListeners();
+  Future<void> load() => _load();
+
+  /// Recarga silenciosa (sin spinner) para los eventos de Realtime.
+  Future<void> refresh() => _load(showLoading: false);
+
+  Future<void> _load({bool showLoading = true}) async {
+    if (showLoading) {
+      loading = true;
+      notifyListeners();
+    }
     try {
       final results = await Future.wait([
         _projects.getById(projectId),
@@ -418,5 +436,11 @@ class ProjectViewModel extends ChangeNotifier {
       notifyListeners();
       showMessage(friendlyError(error), isError: true);
     }
+  }
+
+  @override
+  void dispose() {
+    _unsubscribeRealtime?.call();
+    super.dispose();
   }
 }

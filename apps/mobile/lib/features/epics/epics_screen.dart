@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/events.dart';
+import '../../core/realtime.dart';
 import '../../data/models.dart';
 import '../../data/repositories.dart';
 import '../../shared/colors.dart';
@@ -17,6 +18,7 @@ class EpicsScreen extends StatelessWidget {
         authRepository: context.read<AuthRepository>(),
         epicRepository: context.read<EpicRepository>(),
         dataChanges: context.read<DataChangeNotifier>(),
+        realtimeBus: context.read<RealtimeBus>(),
       )..load(),
       child: const _EpicsView(),
     );

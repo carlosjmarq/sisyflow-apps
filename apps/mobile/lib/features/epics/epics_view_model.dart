@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/events.dart';
 import '../../core/feedback.dart';
+import '../../core/realtime.dart';
 import '../../data/models.dart';
 import '../../data/repositories.dart';
 
@@ -13,19 +14,34 @@ class EpicsViewModel extends ChangeNotifier {
     required AuthRepository authRepository,
     required EpicRepository epicRepository,
     required this.dataChanges,
+    required this.realtimeBus,
   }) : _auth = authRepository,
-       _epics = epicRepository;
+       _epics = epicRepository {
+    _unsubscribeRealtime = realtimeBus.watchRefresh(const {
+      DbTable.epics,
+      DbTable.projects,
+    }, refresh);
+  }
 
   final AuthRepository _auth;
   final EpicRepository _epics;
   final DataChangeNotifier dataChanges;
+  final RealtimeBus realtimeBus;
+  VoidCallback? _unsubscribeRealtime;
 
   List<Epic> epics = [];
   bool loading = true;
 
-  Future<void> load() async {
-    loading = true;
-    notifyListeners();
+  Future<void> load() => _load();
+
+  /// Recarga silenciosa (sin spinner) para los eventos de Realtime.
+  Future<void> refresh() => _load(showLoading: false);
+
+  Future<void> _load({bool showLoading = true}) async {
+    if (showLoading) {
+      loading = true;
+      notifyListeners();
+    }
     try {
       epics = await _epics.list();
     } catch (error) {
@@ -34,6 +50,12 @@ class EpicsViewModel extends ChangeNotifier {
       loading = false;
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    _unsubscribeRealtime?.call();
+    super.dispose();
   }
 
   Future<void> create(String name, String colorCode) async {

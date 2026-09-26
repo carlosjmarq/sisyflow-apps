@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/events.dart';
+import '../../core/realtime.dart';
 import '../../data/models.dart';
 import '../../data/repositories.dart';
 import 'project_view_model.dart';
@@ -26,6 +27,7 @@ class ProjectScreen extends StatelessWidget {
         tagRepository: context.read<TagRepository>(),
         completionRepository: context.read<CompletionRepository>(),
         dataChanges: context.read<DataChangeNotifier>(),
+        realtimeBus: context.read<RealtimeBus>(),
         projectId: projectId,
       )..load(),
       child: _ProjectView(openTodoId: openTodoId),

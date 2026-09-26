@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/events.dart';
 import '../../core/feedback.dart';
+import '../../core/realtime.dart';
 import '../../data/models.dart';
 import '../../data/recurrence.dart';
 import '../../data/repositories.dart';
@@ -21,6 +22,7 @@ class HomeViewModel extends ChangeNotifier {
     required CompletionRepository completionRepository,
     required GamificationRepository gamificationRepository,
     required this.dataChanges,
+    required this.realtimeBus,
   }) : _auth = authRepository,
        _projects = projectRepository,
        _epics = epicRepository,
@@ -28,9 +30,17 @@ class HomeViewModel extends ChangeNotifier {
        _completions = completionRepository,
        _gamification = gamificationRepository {
     dataChanges.addListener(_onDataChanged);
+    _unsubscribeRealtime = realtimeBus.watchRefresh(const {
+      DbTable.projects,
+      DbTable.epics,
+      DbTable.todos,
+      DbTable.todoCompletions,
+    }, refresh);
   }
 
   final DataChangeNotifier dataChanges;
+  final RealtimeBus realtimeBus;
+  VoidCallback? _unsubscribeRealtime;
 
   void _onDataChanged() {
     load();
@@ -38,6 +48,7 @@ class HomeViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _unsubscribeRealtime?.call();
     dataChanges.removeListener(_onDataChanged);
     super.dispose();
   }
@@ -56,9 +67,16 @@ class HomeViewModel extends ChangeNotifier {
   Map<String, List<TodoCompletion>> completionsByTodo = {};
   bool loading = true;
 
-  Future<void> load() async {
-    loading = true;
-    notifyListeners();
+  Future<void> load() => _load();
+
+  /// Recarga silenciosa (sin spinner) para los eventos de Realtime.
+  Future<void> refresh() => _load(showLoading: false);
+
+  Future<void> _load({bool showLoading = true}) async {
+    if (showLoading) {
+      loading = true;
+      notifyListeners();
+    }
     try {
       final results = await Future.wait([
         _projects.listWithDetails(),

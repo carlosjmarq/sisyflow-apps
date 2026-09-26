@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'core/events.dart';
 import 'core/feedback.dart';
+import 'core/realtime.dart';
 import 'core/theme.dart';
 import 'data/repositories.dart';
 import 'features/auth/auth_view_model.dart';
@@ -35,6 +36,7 @@ class _SisyFlowAppState extends State<SisyFlowApp> {
         Provider(create: (_) => CompletionRepository()),
         Provider(create: (_) => GamificationRepository()),
         Provider(create: (_) => BackupService()),
+        Provider<RealtimeBus>.value(value: widget.authViewModel.realtimeBus),
         ChangeNotifierProvider(create: (_) => DataChangeNotifier()),
         ChangeNotifierProvider.value(value: widget.authViewModel),
         ChangeNotifierProvider(create: (_) => ThemeViewModel()),

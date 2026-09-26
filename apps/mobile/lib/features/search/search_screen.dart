@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/realtime.dart';
 import '../../data/repositories.dart';
 import 'search_view_model.dart';
 
@@ -11,8 +12,10 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) =>
-          SearchViewModel(todoRepository: context.read<TodoRepository>()),
+      create: (context) => SearchViewModel(
+        todoRepository: context.read<TodoRepository>(),
+        realtimeBus: context.read<RealtimeBus>(),
+      ),
       child: const _SearchView(),
     );
   }

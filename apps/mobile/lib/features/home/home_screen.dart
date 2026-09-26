@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/events.dart';
+import '../../core/realtime.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/repositories.dart';
@@ -29,6 +30,7 @@ class HomeScreen extends StatelessWidget {
         completionRepository: context.read<CompletionRepository>(),
         gamificationRepository: context.read<GamificationRepository>(),
         dataChanges: context.read<DataChangeNotifier>(),
+        realtimeBus: context.read<RealtimeBus>(),
       )..load(),
       child: const _HomeView(),
     );

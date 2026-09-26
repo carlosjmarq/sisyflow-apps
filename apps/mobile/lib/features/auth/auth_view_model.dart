@@ -4,17 +4,34 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/feedback.dart';
+import '../../core/realtime.dart';
 import '../../data/repositories.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  AuthViewModel(this._repository) {
-    _subscription = _repository.authStateChanges.listen(
-      (_) => notifyListeners(),
-    );
+  AuthViewModel(this._repository, {RealtimeBus? realtimeBus})
+    : _realtime = realtimeBus ?? RealtimeBus() {
+    _syncRealtime();
+    _subscription = _repository.authStateChanges.listen((_) {
+      _syncRealtime();
+      notifyListeners();
+    });
   }
 
   final AuthRepository _repository;
+  final RealtimeBus _realtime;
   late final StreamSubscription<AuthState> _subscription;
+
+  /// Bus de Realtime compartido (se provee en el árbol de widgets).
+  RealtimeBus get realtimeBus => _realtime;
+
+  void _syncRealtime() {
+    final userId = _repository.currentUser?.id;
+    if (userId != null) {
+      _realtime.start(userId);
+    } else {
+      _realtime.stop();
+    }
+  }
 
   bool _loading = false;
 
@@ -78,6 +95,7 @@ class AuthViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _subscription.cancel();
+    _realtime.stop();
     super.dispose();
   }
 }
