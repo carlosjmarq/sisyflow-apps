@@ -25,6 +25,7 @@ import type {
   TodoStatus,
   Urgency,
 } from '../types'
+import { useRealtimeRefresh } from '../realtime/useRealtimeRefresh'
 import { useTodoCompletions } from './useTodoCompletions'
 
 const priorityOrder: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 }
@@ -82,6 +83,8 @@ export function useProjects() {
   useEffect(() => {
     loadProjects()
   }, [loadProjects])
+
+  useRealtimeRefresh(['projects', 'todos'], loadProjects, { enabled: Boolean(user) })
 
   const createProject = useCallback(async (name: string, color: string, epicId: string) => {
     if (!user) return null
@@ -193,6 +196,8 @@ export function useProjectTodos(projectId: string | undefined, sortBy: TodoSortK
     setLoading(true)
     loadTodos()
   }, [loadTodos])
+
+  useRealtimeRefresh(['todos'], loadTodos, { enabled: Boolean(projectId && user) })
 
   const createTodo = useCallback(async (input: NewTodoInput) => {
     if (!projectId || !user) return null
@@ -316,6 +321,8 @@ export function useEpics() {
     loadEpics()
   }, [loadEpics])
 
+  useRealtimeRefresh(['epics'], loadEpics, { enabled: Boolean(user) })
+
   const createEpic = useCallback(async (name: string, colorCode: string) => {
     if (!user) return null
     const optimistic: Epic = { id: crypto.randomUUID(), name, colorCode, createdAt: new Date() }
@@ -392,6 +399,8 @@ export function useProjectTags(projectId: string | undefined) {
   useEffect(() => {
     loadTags()
   }, [loadTags])
+
+  useRealtimeRefresh(['tags'], loadTags, { enabled: Boolean(projectId && user) })
 
   const createTag = useCallback(async (name: string, color?: TagColor) => {
     if (!projectId || !user || !name.trim()) return

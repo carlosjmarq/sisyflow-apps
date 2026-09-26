@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthContext'
 import { useToast } from '../components/ui/ToastContext'
 import { mapTodo, type TodoRow } from '../data/mappers'
+import { useRealtimeRefresh } from '../realtime/useRealtimeRefresh'
 import { useTodoCompletions } from './useTodoCompletions'
 import type { Todo } from '../types'
 
@@ -76,6 +77,8 @@ export function useDayTodos() {
   useEffect(() => {
     load()
   }, [load])
+
+  useRealtimeRefresh(['todos'], load, { enabled: Boolean(user) })
 
   return { todos, loading, reload: load, completionsForTodo, completeTodo, undoLastCompletion }
 }

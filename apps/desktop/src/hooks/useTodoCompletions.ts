@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { useToast } from '../components/ui/ToastContext'
 import { mapTodoCompletion, todoCompletionInsertFromDomain, type TodoCompletionRow } from '../data/mappers'
 import { recurrencePeriodStart } from '../lib/recurrence'
+import { useRealtimeRefresh } from '../realtime/useRealtimeRefresh'
 import type { Todo, TodoCompletion } from '../types'
 
 const HISTORY_LOOKBACK_MS = 62 * 24 * 60 * 60 * 1000
@@ -56,6 +57,8 @@ export function useTodoCompletions(todos: Todo[]) {
   useEffect(() => {
     load()
   }, [load])
+
+  useRealtimeRefresh(['todo_completions'], load, { enabled: Boolean(user && idsKey) })
 
   const complete = useCallback(async (todoId: string, completedAt = new Date()) => {
     if (!user) return null

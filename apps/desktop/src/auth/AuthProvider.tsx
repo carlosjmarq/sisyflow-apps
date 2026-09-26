@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/ui/ToastContext'
+import { realtimeBus } from '../realtime/bus'
 import { processAuthCallback } from './authCallback'
 import { AuthContext } from './AuthContext'
 
@@ -28,6 +29,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.subscription.unsubscribe()
     }
   }, [])
+
+  useEffect(() => {
+    const userId = session?.user.id
+    if (userId) realtimeBus.start(userId)
+    else realtimeBus.stop()
+    return () => realtimeBus.stop()
+  }, [session?.user.id])
 
   useEffect(() => {
     const bridge = window.sisyflow

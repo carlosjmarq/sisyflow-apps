@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthContext'
 import { useToast } from '../components/ui/ToastContext'
+import { useRealtimeRefresh } from '../realtime/useRealtimeRefresh'
 
 export interface DailyLog {
   day: string
@@ -77,6 +78,8 @@ export function useGamification(days = 365) {
   useEffect(() => {
     load()
   }, [load])
+
+  useRealtimeRefresh(['todos', 'todo_completions'], load, { enabled: Boolean(user) })
 
   return { logs, streaks, globalStreak, loading, reload: load }
 }

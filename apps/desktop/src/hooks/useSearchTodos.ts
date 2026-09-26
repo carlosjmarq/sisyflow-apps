@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthContext'
 import { mapTodo } from '../data/mappers'
+import { useRealtimeRefresh } from '../realtime/useRealtimeRefresh'
 import type { Todo } from '../types'
 
 export function useSearchTodos(search: string) {
@@ -42,6 +43,10 @@ export function useSearchTodos(search: string) {
     }, 300)
     return () => clearTimeout(debounceRef.current)
   }, [performSearch])
+
+  useRealtimeRefresh(['todos'], performSearch, {
+    enabled: Boolean(user && search.trim()),
+  })
 
   return { results, loading }
 }
