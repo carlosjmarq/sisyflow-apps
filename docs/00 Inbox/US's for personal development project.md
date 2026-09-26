@@ -283,11 +283,13 @@ _Evitar crear la misma tarea todos los días: una tarea, muchos empujes._
 
 - **Como** usuario, **quiero** definir una periodicidad para una tarea y marcarla como completada cada vez que la hago **para** no crear tareas repetidas del mismo hábito o actividad (ej. ver una clase del curso todos los días).
 
-- **Detalles Técnicos (Esquema):** `todos.recurrence` (enum: `none`, `daily`, `weekdays`, `weekly`, `monthly`); tabla `todo_completions` (`id`, `todo_id` fk, `user_id`, `completed_at`) como historial de cada empujón de una tarea recurrente.
+- **Detalles Técnicos (Esquema):** `todos.recurrence` (enum: `none`, `daily`, `weekdays`, `weekly`, `monthly`, `custom`) y `todos.recurrence_days` (`smallint[]`, días ISO 1..7, solo para `custom`); tabla `todo_completions` (`id`, `todo_id` fk, `user_id`, `completed_at`) como historial de cada empujón de una tarea recurrente. Ver [[ADR-017 Recurrencia semanal personalizada]].
 
 - **Criterios de Aceptación:**
 
-    - Se puede elegir la periodicidad al crear o editar la tarea: nunca, diaria, días hábiles (L–V), semanal o mensual; por defecto "nunca".
+    - Se puede elegir la periodicidad al crear o editar la tarea con un selector estilo Google Calendar: nunca, diaria, semanal (con casillas de los días de la semana, ej. lunes y martes), días hábiles (L–V) o mensual; por defecto "nunca".
+
+    - Las tareas con recurrencia personalizada semanal solo aparecen en «Tareas del día» los días elegidos (y las de días hábiles, de lunes a viernes).
 
     - La tarea recurrente nunca pasa a `done`: cada clic en el check registra un completado con fecha y hora, y el contador del período (`×N hoy/esta semana/este mes`) se incrementa.
 

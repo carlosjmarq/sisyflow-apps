@@ -61,7 +61,8 @@ Pausar/completar oculta tareas incompletas del día a día sin borrar historial.
 | `expiration_date` | `timestamptz` | nullable (paridad) |
 | `content` | `jsonb` | bloques BlockNote; default `'[]'` (paridad) |
 | `content_format` | `text` | `'blocknote'` (paridad; legacy `'markdown'`) |
-| `recurrence` | `todo_recurrence` enum | `none`, `daily`, `weekdays`, `weekly`, `monthly`; default `none` (US 4.1) |
+| `recurrence` | `todo_recurrence` enum | `none`, `daily`, `weekdays`, `weekly`, `monthly`, `custom`; default `none` (US 4.1, ADR-017) |
+| `recurrence_days` | `smallint[]` | días ISO 1..7 para `custom` (no vacío, máx. 7); `null` para el resto (ADR-017) |
 | `completed_at` | `timestamptz` | nullable; **automático** al pasar a `done` (US 2.3), se limpia al salir |
 | `created_at` | `timestamptz` | `default now()` |
 | `updated_at` | `timestamptz` | paridad (Dexie v4) |

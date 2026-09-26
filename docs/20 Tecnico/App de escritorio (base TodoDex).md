@@ -46,6 +46,9 @@ SisyFlow el 2026-09-13 ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
   por tarea (`diaria`, `días hábiles`, `semanal`, `mensual`), check que registra
   completados con contador del período, historial en el drawer, completado desde
   «Tareas del día» y backup v4 con `todo_completions`.
+- **Recurrencia semanal personalizada** ([[ADR-017 Recurrencia semanal personalizada]]):
+  selector con casillas de los días de la semana («cada lunes y martes»); la
+  vista «Tareas del día» filtra según la periodicidad (`custom` y `weekdays`).
 - **Realtime** ([[ADR-016 Realtime con Supabase]], 2026-09-26): bus con
   micro-suscripciones ref-counteadas (`src/realtime/`); Inicio, Épicas,
   Proyecto, búsqueda y gamificación se actualizan en vivo ante cambios del móvil

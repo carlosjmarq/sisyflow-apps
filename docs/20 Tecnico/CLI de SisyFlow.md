@@ -37,11 +37,11 @@ sisyflow project update <id|nombre> [--name] [--epic] [--color] [--status]
 sisyflow project delete <id|nombre> [--yes]
 
 sisyflow todo create --title <t> --project <id|nombre> [--status] [--priority] [--urgency]
-                     [--recurrence none|daily|weekdays|weekly|monthly]
+                     [--recurrence none|daily|weekdays|weekly|monthly|custom] [--days lun,mar]
                      [--due <fecha>] [--content <texto>] [--content-format blocknote|markdown]
 sisyflow todo list [--project] [--status] [--json] | get <id> [--json]
 sisyflow todo update <id> [--title] [--status] [--priority] [--urgency] [--recurrence]
-                        [--due] [--content]
+                        [--days lun,mar] [--due] [--content]
 sisyflow todo check <id>            # registra un completado de una tarea recurrente
 sisyflow todo delete <id> [--yes]
 
@@ -101,10 +101,13 @@ Windows para evitar el redirect UTF-16 de PowerShell 5.1).
 - `sisyflow import <archivo.json>` crea épicas, proyectos y tareas en lote
   (validado con zod), reportando cantidades y errores por fila.
 
-## Tareas recurrentes (US 4.1, ADR-014)
+## Tareas recurrentes (US 4.1, ADR-014; ADR-017)
 
-- `--recurrence` en `todo create`/`todo update` (`none` por defecto); la columna
-  REPETICIÓN se muestra en `list`/`get`.
+- `--recurrence` en `todo create`/`todo update` (`none` por defecto); las
+  columnas REPETICIÓN y DÍAS se muestran en `list`/`get`.
+- `--recurrence custom --days lun,mar` para días personalizados (acepta nombres
+  `lun..dom` o números `1..7`; admite comas o espacios). `custom` exige `--days`.
+- `import` acepta `recurrence` y `recurrence_days` por tarea.
 - `sisyflow todo check <id>` inserta un completado en `todo_completions` con la
   fecha y hora actuales; falla con exit code 1 si la tarea no existe o no es
   recurrente.

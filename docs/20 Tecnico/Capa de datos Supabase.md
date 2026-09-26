@@ -61,8 +61,10 @@ cada tecla) y se fuerza el guardado al cambiar de tarea o cerrar el drawer.
 
 ### Tareas recurrentes (US 4.1, ADR-014)
 
-- `Todo.recurrence` (`none`, `daily`, `weekdays`, `weekly`, `monthly`) y el
-  historial `TodoCompletion` viven en `src/types/index.ts` y `mappers.ts`.
+- `Todo.recurrence` (`none`, `daily`, `weekdays`, `weekly`, `monthly`, `custom`)
+  y `Todo.recurrenceDays` (`number[]`, días ISO 1..7 para `custom`) junto con el
+  historial `TodoCompletion` viven en `src/types/index.ts` y `mappers.ts`
+  ([[ADR-017 Recurrencia semanal personalizada]]).
 - `useTodoCompletions` centraliza el historial; `useProjectTodos` y `useDayTodos`
   lo integran y exponen `completionsForTodo`, `completeTodo`, `removeCompletion`
   y `undoLastCompletion` (optimista + reversión).
@@ -71,7 +73,8 @@ cada tecla) y se fuerza el guardado al cambiar de tarea o cerrar el drawer.
   sin perder la racha.
 - El estado "hecho" del período (día, semana desde el lunes, mes desde el día 1)
   se calcula en el cliente (`src/lib/recurrence.ts`); SQL solo agrega marcas de
-  tiempo por día local.
+  tiempo por día local. `recurrenceDueOn` decide si una tarea aparece en
+  «Tareas del día» ese día (`custom` en sus días, `weekdays` de lunes a viernes).
 - El backup sube a v4 (exporta `todo_completions`); el import acepta v2, v3 y v4.
 
 ### Realtime (ADR-016)

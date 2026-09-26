@@ -31,7 +31,10 @@ las rachas ([[ADR-014 Tareas recurrentes]]). También se creó la **app móvil
 Flutter para Android** con paridad funcional (US 5.1, [[ADR-015 App movil Flutter (Android)]],
 [[App móvil (Flutter)]]). Luego se sumó **Realtime** (2026-09-26): desktop y
 móvil se sincronizan en vivo con micro-suscripciones por vista
-([[ADR-016 Realtime con Supabase]]).
+([[ADR-016 Realtime con Supabase]]). La recurrencia pasó a un selector estilo
+Google Calendar con días de la semana personalizados (ej. «cada lunes y martes»)
+y «Tareas del día» filtra según la periodicidad
+([[ADR-017 Recurrencia semanal personalizada]]).
 El roadmap de fases vive en [[Fases del proyecto]].
 
 ## 00 Inbox
@@ -57,6 +60,7 @@ El roadmap de fases vive en [[Fases del proyecto]].
 - [[ADR-014 Tareas recurrentes]] — Aceptado
 - [[ADR-015 App movil Flutter (Android)]] — Aceptado
 - [[ADR-016 Realtime con Supabase]] — Aceptado
+- [[ADR-017 Recurrencia semanal personalizada]] — Aceptado
 
 ## 20 Tecnico
 

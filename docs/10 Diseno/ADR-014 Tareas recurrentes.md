@@ -89,5 +89,6 @@ Alternativas consideradas:
 
 - **MOC:** [[00 Inbox/MOC]]
 - **Relacionada con:** [[ADR-007 Jerarquia Epicas Proyectos Tareas]], [[ADR-008 Estrategia de datos nube-first]], [[ADR-010 Ciclo de vida de proyectos y vista del dia]], [[ADR-011 Gamificacion zona horaria rachas y heatmap]]
+- **Extendido por:** [[ADR-017 Recurrencia semanal personalizada]] (agrega `custom` y `recurrence_days`)
 - **Afecta a:** [[Modelo de datos objetivo (Supabase)]], [[Gamificacion]], [[Capa de datos Supabase]], [[CLI de SisyFlow]], [[Paridad funcional con TodoDex]]
 - **Repo:** `backend/supabase/migrations/`, `apps/desktop/src/`, `apps/cli/src/`

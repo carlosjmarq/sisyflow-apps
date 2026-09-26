@@ -46,6 +46,8 @@ del desktop.
   historial, y gestión de etiquetas.
 - Recurrentes: periodicidad, contador del período, deshacer, historial y
   conversión de completada → recurrente conservando el completado (ADR-014).
+  Recurrencia semanal personalizada con casillas de días ([[ADR-017 Recurrencia semanal personalizada]]);
+  «Tareas del día» filtra según la periodicidad (`custom` y `weekdays`).
 - Gamificación: RPCs `daily_epic_logs_tz`, `epic_streaks` y `streak_global` con
   la zona horaria IANA del dispositivo (`flutter_timezone`).
 - Ajustes: tema, cuenta/cerrar sesión y backup JSON v4 (export vía share sheet,
