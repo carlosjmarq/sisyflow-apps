@@ -22,6 +22,8 @@ para `/setup`: si algo falta, se instala o se actualiza y se registra aquí.
 | Supabase CLI | 2.117.0 | OK | Actualizada el 2026-09-13 vía `pnpm update -g supabase` (antes 2.98.2) |
 | Docker | 29.4.2 | OK | CLI OK; **daemon no estaba corriendo** en la verificación (necesario para `supabase start`) |
 | npx skills | 1.5.26 | OK | Gestión de skills del proyecto |
+| Flutter | 3.47.5 (Dart 3.13.4) | OK | Actualizado el 2026-09-20 (antes 3.22.1); app móvil, ADR-015 |
+| Android SDK | 36.0.0 | OK | Licencias aceptadas el 2026-09-20 (`flutter doctor --android-licenses`) |
 | Obsidian | — | n/a | Abrir `docs/` como vault |
 
 ### Comandos de verificación
@@ -44,6 +46,10 @@ npx skills --version
   `winCodeSign` en el primer build de Electron ([[Builds de escritorio (Windows)]]).
 - Docker Desktop debe estar corriendo para `supabase start`. Al verificar, el
   daemon estaba detenido: iniciarlo antes de la fase `/backend`.
+- Para la app móvil: `flutter doctor` debe quedar verde en Android; el primer
+  `flutter build apk` descarga Gradle y el NDK (~1 GB). No hay emulador creado
+  todavía (`flutter emulators --create`) ni Visual Studio completo para builds
+  de Windows (no requerido por el alcance Android).
 
 ## Pendientes
 

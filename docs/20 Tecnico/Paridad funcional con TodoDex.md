@@ -81,6 +81,16 @@ en cada fase.
 - [x] Las tareas sin recurrencia conservan el flujo actual (`status = done` +
       `completed_at`), sin regresiones.
 
+### App móvil (Flutter, US 5.1)
+
+- [x] Paridad funcional en Android sobre el mismo backend ([[App móvil (Flutter)]],
+      [[ADR-015 App movil Flutter (Android)]]): auth, jerarquía, recurrentes,
+      gamificación, etiquetas, búsqueda y backup.
+- [x] Editor con los bloques BlockNote soportados (párrafos, encabezados 1–3,
+      listas, cita, código y separador); los tipos exóticos degradan a texto.
+- [ ] E2E manual en dispositivo/emulador y deep link de confirmación
+      (pendiente).
+
 ### Look & feel
 
 - [x] Estética Material Design 3 (tokens MD3, light/dark con toggle, iconos
@@ -115,6 +125,10 @@ en cada fase.
       E2E de UI (crear recurrente, completar ×2 desde Inicio con heatmap
       reactivo, deshacer, historial con borrado, conversión de tarea completada
       a recurrente y tareas de una vez sin cambios).
+- [x] Verificación de la app móvil (2026-09-20): `flutter analyze` y
+      `dart format` verdes, 13 tests unitarios (mappers, recurrencia y adaptador
+      BlockNote) y `flutter build apk --debug` compila; E2E en dispositivo
+      pendiente.
 
 ### Hallazgos de la Fase 5
 

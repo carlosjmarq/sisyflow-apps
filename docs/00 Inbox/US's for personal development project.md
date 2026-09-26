@@ -298,3 +298,29 @@ _Evitar crear la misma tarea todos los días: una tarea, muchos empujes._
     - Se puede deshacer el último completado y ver el historial reciente en el detalle de la tarea.
 
     - Las tareas sin recurrencia conservan el comportamiento actual (`status = done` + `completed_at`), sin regresiones de paridad.
+
+## Módulo 5: App móvil (Flutter)
+
+_Llevar el empuje diario al teléfono, con la misma cuenta y datos que el desktop._
+
+**US 5.1: App Android con paridad funcional**
+
+- **Como** usuario, **quiero** una app Android con mi cuenta de SisyFlow **para** registrar mis empujes diarios desde el teléfono sin abrir la computadora.
+
+- **Detalles Técnicos:** Flutter + Material Design 3, `supabase_flutter` con publishable key + RLS, misma base de datos y RPCs que el desktop ([[ADR-015 App movil Flutter (Android)]]).
+
+- **Criterios de Aceptación:**
+
+    - Login/registro con email y contraseña, sesión persistente y deep link `sisyflow://auth/callback` para confirmar el correo.
+
+    - Paridad funcional: épicas, proyectos (estados y colores), tareas (estado, prioridad, urgencia, vencimiento), tags, búsqueda, orden y filtros.
+
+    - Tareas recurrentes con periodicidad, contador del período, deshacer e historial (US 4.1).
+
+    - Gamificación: heatmap de 365 días (global o por épica), racha actual y mejor marca, y «Tareas del día» con check en vivo.
+
+    - Editor de contenido enriquecido por tarea con los bloques de BlockNote soportados.
+
+    - Ajustes: tema claro/oscuro/sistema, cuenta y backup JSON compatible con el desktop (v4).
+
+    - UI Material Design 3 (tema semilla `#6750A4`), en español y con UI optimista que revierte con aviso si falla la red.

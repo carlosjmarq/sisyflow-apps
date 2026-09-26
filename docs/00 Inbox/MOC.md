@@ -27,7 +27,9 @@ añadió el **CLI de SisyFlow** (`apps/cli/`, binario `sisyflow`) para automatiz
 el CRUD de épicas, proyectos y tareas desde la consola ([[ADR-013 CLI de SisyFlow]]).
 Sobre esa base se implementaron las **tareas recurrentes** (US 4.1, 2026-09-20):
 periodicidad por tarea y un historial de completados que alimenta el heatmap y
-las rachas ([[ADR-014 Tareas recurrentes]]).
+las rachas ([[ADR-014 Tareas recurrentes]]). También se creó la **app móvil
+Flutter para Android** con paridad funcional (US 5.1, [[ADR-015 App movil Flutter (Android)]],
+[[App móvil (Flutter)]]).
 El roadmap de fases vive en [[Fases del proyecto]].
 
 ## 00 Inbox
@@ -51,10 +53,12 @@ El roadmap de fases vive en [[Fases del proyecto]].
 - [[ADR-012 Rediseno UI Material Design 3]]
 - [[ADR-013 CLI de SisyFlow]] — Aceptado
 - [[ADR-014 Tareas recurrentes]] — Aceptado
+- [[ADR-015 App movil Flutter (Android)]] — Aceptado
 
 ## 20 Tecnico
 
 - [[App de escritorio (base TodoDex)]]
+- [[App móvil (Flutter)]]
 - [[CLI de SisyFlow]]
 - [[Capa de datos Supabase]]
 - [[Paridad funcional con TodoDex]]

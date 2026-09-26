@@ -16,6 +16,7 @@ TodoDex verificada. Siguiente fase: `/cloud` (cliente, login y migración Sísif
 | Ruta | Contenido |
 | --- | --- |
 | `apps/desktop/` | App Electron (React + TypeScript + Tailwind + BlockNote; Dexie solo como origen de migración) |
+| `apps/mobile/` | App Android (Flutter + Material Design 3 + Supabase; paridad con el desktop) |
 | `apps/cli/` | CLI `sisyflow`: CRUD de épicas, proyectos y tareas contra Supabase (automatización) |
 | `backend/supabase/` | Backend Supabase (Postgres, Auth, RLS, migraciones, funciones) |
 | `docs/` | Vault Obsidian: fuente de verdad del proyecto (ADRs, notas técnicas, user stories, proceso) |
@@ -75,3 +76,19 @@ En pnpm 9 (Windows) los argumentos van directamente tras el nombre del script
 Para instalarlo como comando de sistema: `pnpm --filter sisyflow-cli build` y
 `pnpm add -g "<ruta absoluta a apps/cli>"`; la configuración se lee de
 `~/.sisyflow/.env` (ver `docs/20 Tecnico/CLI de SisyFlow.md`).
+
+## App móvil (Flutter)
+
+`apps/mobile/` es la app Android con paridad funcional sobre el mismo backend
+(ver `docs/20 Tecnico/App móvil (Flutter).md` y el ADR-015).
+
+```
+cd apps/mobile
+cp env.json.example env.json       # URL y publishable key de Supabase
+flutter pub get
+flutter run --dart-define-from-file=env.json
+flutter build apk --debug --dart-define-from-file=env.json
+```
+
+Calidad: `flutter analyze`, `dart format --set-exit-if-changed lib test` y
+`flutter test`.

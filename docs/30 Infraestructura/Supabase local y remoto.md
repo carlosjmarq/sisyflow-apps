@@ -52,6 +52,9 @@ la app. Ver [[ADR-005 Supabase como backend]] y [[Backend Supabase]].
   `additional_redirect_urls` incluye el deep link y los localhost de desarrollo;
   se aplicó al remoto con `supabase config push`. Los correos de confirmación y
   recuperación vuelven a la app instalada ([[Builds de escritorio (Windows)]]).
+- La app móvil reutiliza el mismo esquema `sisyflow://auth/callback`
+  (intent-filter en `apps/mobile/android/app/src/main/AndroidManifest.xml`); no
+  requiere cambios adicionales en el allowlist ([[App móvil (Flutter)]]).
 
 ### Toolchain
 

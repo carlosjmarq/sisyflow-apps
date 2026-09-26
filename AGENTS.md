@@ -19,6 +19,8 @@ vault (`docs/`, ver `[[00 Inbox/MOC]]`).
 | Ruta | Contenido |
 | --- | --- |
 | `apps/desktop/` | App Electron (React + TypeScript + Tailwind + BlockNote; Dexie solo como origen de migración; UI Material Design 3, ADR-012) |
+| `apps/mobile/` | App Android (Flutter + Material Design 3 + Supabase; paridad funcional, ADR-015) |
+| `apps/cli/` | CLI `sisyflow`: CRUD de épicas, proyectos y tareas contra Supabase (ADR-013) |
 | `backend/supabase/` | Backend Supabase (Postgres, Auth, RLS, migraciones, funciones) |
 | `docs/` | Vault Obsidian (fuente de verdad: ADRs, notas técnicas, user stories) |
 | `.opencode/` | Agentes y comandos del workflow IA |
@@ -79,6 +81,9 @@ la UI de inmediato y revierte con aviso si la red falla (US 1.3). Ver
   BlockNote/Mantine, con tokens Material Design 3 (ADR-012) y animación `motion`
   más iconos `material-symbols`. pnpm con `node-linker=hoisted`. Sin store
   global: hooks + capa de datos.
+- Mobile: Flutter estable + Material Design 3, MVVM + Provider (skills oficiales
+  de Flutter), `supabase_flutter` con publishable key + RLS y UI optimista.
+  Calidad: `flutter analyze`, `dart format` y `flutter test`.
 - Backend: Supabase (Postgres + Auth email/contraseña + RLS). Migraciones vía
   CLI; tipos TypeScript generados para el desktop. `service_role` jamás en la app.
 - Todo acceso a datos desde la app pasa por RLS `auth.uid() = user_id` (US 1.1).
@@ -95,6 +100,11 @@ la UI de inmediato y revierte con aviso si la red falla (US 1.3). Ver
 
 Instaladas a nivel proyecto en `.agents/skills/` (gestionadas con `npx skills`):
 `supabase`, `supabase-postgres-best-practices`, `vercel-react-best-practices`,
-`electron-dev`, `obsidian`, `frontend-design`, `sisyflow-db`.
+`electron-dev`, `obsidian`, `frontend-design`, `sisyflow-db` y las oficiales de
+Flutter/Dart (`flutter-apply-architecture-best-practices`,
+`flutter-build-responsive-layout`, `flutter-setup-declarative-routing`,
+`flutter-implement-json-serialization`, `flutter-add-widget-test`,
+`flutter-add-integration-test`, `flutter-fix-layout-issues`, `dart-add-unit-test`,
+`dart-use-primary-constructors`, `dart-use-pattern-matching`).
 
 Cargar la skill correspondiente ANTES de escribir código del dominio (herramienta `skill`).
