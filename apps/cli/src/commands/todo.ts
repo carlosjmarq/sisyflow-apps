@@ -12,6 +12,7 @@ import {
   parseRecurrence,
   parseTodoStatus,
   parseUrgency,
+  parseWeekdays,
 } from '../lib/validate.js'
 
 type TodoUpdate = Database['public']['Tables']['todos']['Update']
@@ -22,9 +23,17 @@ const COLUMNS: Column[] = [
   { key: 'status', label: 'ESTADO' },
   { key: 'priority', label: 'PRIORIDAD' },
   { key: 'recurrence', label: 'REPETICIÓN' },
+  { key: 'days', label: 'DÍAS' },
   { key: 'project', label: 'PROYECTO' },
   { key: 'due', label: 'VENCE' },
 ]
+
+const WEEKDAY_SHORT = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+
+function formatDays(days: number[] | null | undefined): string {
+  if (!days || days.length === 0) return '—'
+  return [...new Set(days)].sort((a, b) => a - b).map((day) => WEEKDAY_SHORT[day - 1] ?? '?').join('')
+}
 
 const CHECK_COLUMNS: Column[] = [
   { key: 'id', label: 'ID' },
@@ -42,6 +51,7 @@ interface TodoOptions {
   due?: string
   content?: string
   contentFormat?: string
+  days?: string
 }
 
 interface TodoRow {
@@ -51,6 +61,7 @@ interface TodoRow {
   priority: string
   urgency: string
   recurrence: string
+  recurrence_days?: number[] | null
   expiration_date: string | null
   created_at: string
   projects?: { name: string } | null
@@ -63,6 +74,7 @@ function toRow(t: TodoRow): Record<string, string> {
     status: t.status,
     priority: t.priority,
     recurrence: t.recurrence,
+    days: formatDays(t.recurrence_days),
     project: t.projects?.name ?? t.id.slice(0, 8),
     due: formatDate(t.expiration_date),
   }
@@ -79,7 +91,8 @@ export function registerTodo(program: Command): void {
     .option('--status <status>', 'Estado: backlog, todo, in-progress, done, cancelled', 'todo')
     .option('--priority <priority>', 'Prioridad: low, medium, high, critical', 'medium')
     .option('--urgency <urgency>', 'Urgencia: low, medium, high, critical', 'medium')
-    .option('--recurrence <recurrence>', 'Repetición: none, daily, weekdays, weekly, monthly', 'none')
+    .option('--recurrence <recurrence>', 'Repetición: none, daily, weekdays, weekly, monthly, custom', 'none')
+    .option('--days <days>', 'Días de la semana para custom (lun,mar o 1,2)')
     .option('--due <date>', 'Fecha de expiración (YYYY-MM-DD o ISO 8601)')
     .option('--content <text>', 'Contenido de la tarea (texto)')
     .option('--content-format <format>', 'Formato del contenido: blocknote, markdown', 'blocknote')
@@ -92,6 +105,11 @@ export function registerTodo(program: Command): void {
       const priority = parsePriority(options.priority!)
       const urgency = parseUrgency(options.urgency!)
       const recurrence = parseRecurrence(options.recurrence!)
+      const recurrenceDays = options.days ? parseWeekdays(options.days) : []
+      if (recurrence === 'custom' && recurrenceDays.length === 0) {
+        fail('--recurrence custom requiere --days (ej. --days lun,mar)', 2)
+      }
+      const storedDays = recurrence === 'custom' ? recurrenceDays : null
       const content =
         options.content !== undefined
           ? toContentJson(options.content, parseContentFormat(options.contentFormat!))
@@ -107,6 +125,7 @@ export function registerTodo(program: Command): void {
         priority,
         urgency,
         recurrence,
+        recurrence_days: storedDays,
         expiration_date: expirationDate,
         ...(content !== undefined ? { content, content_format: 'blocknote' } : {}),
       })
@@ -118,6 +137,7 @@ export function registerTodo(program: Command): void {
         priority,
         urgency,
         recurrence,
+        recurrence_days: storedDays,
         expiration_date: expirationDate,
         created_at: new Date().toISOString(),
         projects: null,
@@ -172,7 +192,8 @@ export function registerTodo(program: Command): void {
     .option('--status <status>', 'Nuevo estado')
     .option('--priority <priority>', 'Nueva prioridad')
     .option('--urgency <urgency>', 'Nueva urgencia')
-    .option('--recurrence <recurrence>', 'Nueva repetición: none, daily, weekdays, weekly, monthly')
+    .option('--recurrence <recurrence>', 'Nueva repetición: none, daily, weekdays, weekly, monthly, custom')
+    .option('--days <days>', 'Días de la semana para custom (lun,mar o 1,2)')
     .option('--due <date>', 'Nueva fecha de expiración')
     .option('--content <text>', 'Nuevo contenido')
     .option('--content-format <format>', 'Formato del contenido: blocknote, markdown')
@@ -187,7 +208,17 @@ export function registerTodo(program: Command): void {
       if (options.status !== undefined) updates.status = parseTodoStatus(options.status)
       if (options.priority !== undefined) updates.priority = parsePriority(options.priority)
       if (options.urgency !== undefined) updates.urgency = parseUrgency(options.urgency)
-      if (options.recurrence !== undefined) updates.recurrence = parseRecurrence(options.recurrence)
+      const nextRecurrence =
+        options.recurrence !== undefined ? parseRecurrence(options.recurrence) : undefined
+      if (nextRecurrence !== undefined) updates.recurrence = nextRecurrence
+      if (nextRecurrence !== undefined || options.days !== undefined) {
+        if ((nextRecurrence ?? 'custom') === 'custom') {
+          if (options.days === undefined) fail('Para recurrencia custom pasá --days (ej. --days lun,mar)', 2)
+          updates.recurrence_days = parseWeekdays(options.days)
+        } else {
+          updates.recurrence_days = null
+        }
+      }
       if (options.due !== undefined) updates.expiration_date = options.due ? parseDate(options.due) : null
       if (options.content !== undefined) {
         const format = options.contentFormat ? parseContentFormat(options.contentFormat) : 'blocknote'

@@ -14,6 +14,7 @@ import {
   parseDate,
   prioritySchema,
   projectStatusSchema,
+  recurrenceSchema,
   todoStatusSchema,
   urgencySchema,
 } from '../lib/validate.js'
@@ -39,6 +40,8 @@ const todoSchema = z.object({
   due: z.string().optional(),
   content: z.string().optional(),
   content_format: contentFormatSchema.optional(),
+  recurrence: recurrenceSchema.optional(),
+  recurrence_days: z.array(z.number().int().min(1).max(7)).optional(),
 })
 
 const importSchema = z.object({
@@ -111,6 +114,14 @@ export function registerImport(program: Command): void {
       for (const todo of payload.todos ?? []) {
         const projectId = projectIds.get(todo.project) ?? (await resolveProjectId(client, todo.project))
         const id = crypto.randomUUID()
+        const recurrence = todo.recurrence ?? 'none'
+        if (recurrence === 'custom' && (todo.recurrence_days ?? []).length === 0) {
+          fail(`La tarea "${todo.title}" es custom pero no tiene recurrence_days`, 2)
+        }
+        const recurrenceDays =
+          recurrence === 'custom'
+            ? [...new Set(todo.recurrence_days ?? [])].sort((a, b) => a - b)
+            : null
         const { error } = await client.from('todos').insert({
           id,
           project_id: projectId,
@@ -119,6 +130,8 @@ export function registerImport(program: Command): void {
           status: todo.status ?? 'todo',
           priority: todo.priority ?? 'medium',
           urgency: todo.urgency ?? 'medium',
+          recurrence,
+          recurrence_days: recurrenceDays,
           expiration_date: todo.due ? parseDate(todo.due) : null,
           ...(todo.content !== undefined
             ? {

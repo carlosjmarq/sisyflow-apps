@@ -6,7 +6,7 @@ export const todoStatusSchema = z.enum(['backlog', 'todo', 'in-progress', 'done'
 export const prioritySchema = z.enum(['low', 'medium', 'high', 'critical'])
 export const urgencySchema = z.enum(['low', 'medium', 'high', 'critical'])
 export const contentFormatSchema = z.enum(['blocknote', 'markdown'])
-export const recurrenceSchema = z.enum(['none', 'daily', 'weekdays', 'weekly', 'monthly'])
+export const recurrenceSchema = z.enum(['none', 'daily', 'weekdays', 'weekly', 'monthly', 'custom'])
 
 export function parseTodoStatus(value: string): 'backlog' | 'todo' | 'in-progress' | 'done' | 'cancelled' {
   const parsed = todoStatusSchema.safeParse(value)
@@ -40,10 +40,56 @@ export function parseContentFormat(value: string): 'blocknote' | 'markdown' {
 
 export function parseRecurrence(
   value: string,
-): 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly' {
+): 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly' | 'custom' {
   const parsed = recurrenceSchema.safeParse(value)
   if (!parsed.success) fail(`Recurrencia inválida "${value}". Válidas: ${recurrenceSchema.options.join(', ')}`, 2)
   return parsed.data
+}
+
+const WEEKDAY_NAMES: Record<string, number> = {
+  lun: 1,
+  lunes: 1,
+  mar: 2,
+  martes: 2,
+  mie: 3,
+  miercoles: 3,
+  'mié': 3,
+  'miércoles': 3,
+  jue: 4,
+  jueves: 4,
+  vie: 5,
+  viernes: 5,
+  sab: 6,
+  sabado: 6,
+  'sáb': 6,
+  'sábado': 6,
+  dom: 7,
+  domingo: 7,
+}
+
+/** Días ISO (1..7) desde `lun,mar` o `1,2` (ADR-017). */
+export function parseWeekdays(value: string): number[] {
+  const parts = value
+    .split(/[\s,]+/)
+    .map((part) => part.trim().toLowerCase())
+    .filter((part) => part !== '')
+  if (parts.length === 0) fail('--days requiere al menos un día (ej. lun,mar)', 2)
+
+  const days = new Set<number>()
+  for (const part of parts) {
+    const numeric = Number(part)
+    if (Number.isInteger(numeric) && numeric >= 1 && numeric <= 7) {
+      days.add(numeric)
+      continue
+    }
+    const named = WEEKDAY_NAMES[part]
+    if (named) {
+      days.add(named)
+      continue
+    }
+    fail(`Día inválido "${part}". Usa lun..dom o 1..7`, 2)
+  }
+  return [...days].sort((a, b) => a - b)
 }
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/
