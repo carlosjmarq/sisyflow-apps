@@ -22,10 +22,11 @@ backend/
     ├── config.toml      # project_id sisyflow; puertos 453xx (restricción de Windows)
     ├── migrations/      # 20260913191443_initial_schema.sql, 20260913205909_epic_delete_restrict.sql,
     │                    # 20260913211858_gamification_rpc.sql, 20260913224500_global_streak.sql,
-    │                    # 20260920120000_recurring_todos.sql, 20260926120000_realtime.sql
+    │                    # 20260920120000_recurring_todos.sql, 20260926120000_realtime.sql,
+    │                    # 20260926130000_recurrence_custom_enum.sql, 20260926131000_recurrence_days.sql
     ├── tests/           # rls_test.sql, hierarchy_test.sql, gamification_test.sql,
-    │                    # global_streak_test.sql, recurring_test.sql, realtime_test.sql
-    │                    # (pgTAP, 71 aserciones)
+    │                    # global_streak_test.sql, recurring_test.sql, realtime_test.sql,
+    │                    # recurrence_days_test.sql (pgTAP, 75 aserciones)
     ├── functions/       # edge functions (vacío; solo con ADR)
     └── seed.sql         # usuarios de prueba + datos de ejemplo
 ```
@@ -92,3 +93,9 @@ La vista `daily_epic_logs` alimenta la gamificación (`[[Gamificacion]]`).
 > y `realtime_test.sql` (10 aserciones; 71 en total). Verificado en local el
 > 2026-09-26 (`db reset` limpio, suite en verde y E2E de Realtime con INSERT/
 > DELETE + aislamiento RLS) y aplicado al remoto con `supabase db push`.
+>
+> Recurrencia personalizada (2026-09-26, ADR-017): el enum `todo_recurrence`
+> suma `custom` (migración propia por la restricción de Postgres) y
+> `todos.recurrence_days` guarda los días ISO 1..7 (`recurrence_days_test.sql`,
+> 4 aserciones; 75 en total). Verificado en local y aplicado al remoto con
+> `supabase db push`.
