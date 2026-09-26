@@ -22,9 +22,10 @@ backend/
     ├── config.toml      # project_id sisyflow; puertos 453xx (restricción de Windows)
     ├── migrations/      # 20260913191443_initial_schema.sql, 20260913205909_epic_delete_restrict.sql,
     │                    # 20260913211858_gamification_rpc.sql, 20260913224500_global_streak.sql,
-    │                    # 20260920120000_recurring_todos.sql
+    │                    # 20260920120000_recurring_todos.sql, 20260926120000_realtime.sql
     ├── tests/           # rls_test.sql, hierarchy_test.sql, gamification_test.sql,
-    │                    # global_streak_test.sql, recurring_test.sql (pgTAP, 61 aserciones)
+    │                    # global_streak_test.sql, recurring_test.sql, realtime_test.sql
+    │                    # (pgTAP, 71 aserciones)
     ├── functions/       # edge functions (vacío; solo con ADR)
     └── seed.sql         # usuarios de prueba + datos de ejemplo
 ```
@@ -85,3 +86,9 @@ La vista `daily_epic_logs` alimenta la gamificación (`[[Gamificacion]]`).
 > `20260920120000_recurring_todos.sql` (enum `todo_recurrence`, tabla
 > `todo_completions`, trigger de integridad y unión en la gamificación) y
 > `recurring_test.sql` (12 aserciones; 61 en total).
+>
+> Realtime (2026-09-26, ADR-016): migración `20260926120000_realtime.sql`
+> (las 5 tablas del dominio en `supabase_realtime` + `replica identity full`)
+> y `realtime_test.sql` (10 aserciones; 71 en total). Verificado en local el
+> 2026-09-26 (`db reset` limpio, suite en verde y E2E de Realtime con INSERT/
+> DELETE + aislamiento RLS) y aplicado al remoto con `supabase db push`.
