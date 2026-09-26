@@ -74,6 +74,22 @@ cada tecla) y se fuerza el guardado al cambiar de tarea o cerrar el drawer.
   tiempo por día local.
 - El backup sube a v4 (exporta `todo_completions`); el import acepta v2, v3 y v4.
 
+### Realtime (ADR-016)
+
+- `src/realtime/bus.ts`: un canal por usuario (`sisyflow:db:<uid>`) con bindings
+  ref-counteados por tabla y filtro `user_id=eq.<uid>`. Reconstruye el canal
+  (debounced) según las vistas montadas y hace *resync* al reconectar.
+- `src/realtime/useRealtimeRefresh(tables, reload)`: micro-suscripción de una
+  vista; recarga (debounced ~250 ms) ante cualquier cambio o resync y limpia en
+  unmount.
+- Cada hook se suscribe a lo que lee: `useProjects` (`projects`, `todos`),
+  `useEpics` (`epics`), `useProjectTodos` (`todos`), `useProjectTags` (`tags`),
+  `useDayTodos` (`todos`), `useTodoCompletions` (`todo_completions`),
+  `useGamification` (`todos`, `todo_completions`) y `useSearchTodos` (`todos`).
+- Backend: las 5 tablas en `supabase_realtime` con `replica identity full`
+  (`20260926120000_realtime.sql`). El filtro `user_id` es obligatorio porque la
+  RLS no se aplica a DELETE.
+
 ### Errores y avisos
 
 - `src/components/ui/Toast.tsx`: proveedor mínimo de avisos (sin dependencias).
@@ -100,8 +116,10 @@ cada tecla) y se fuerza el guardado al cambiar de tarea o cerrar el drawer.
       transitorios de JWT (se observó un `PGRST303: JWT issued at future` una
       única vez tras un reinicio del stack, con relojes sincronizados).
 - [ ] Verificación E2E manual de la UI en el build empaquetado (fase `/deliver`).
-- [x] Realtime de Supabase: se revisó en `/gamification` y no se usa; las vistas
-      se recargan al completar actividad.
+- [x] Realtime de Supabase: en `/gamification` se evaluó y no se usó; las vistas
+      se recargaban al completar actividad. **Actualizado el 2026-09-26**:
+      adoptado con Postgres Changes y micro-suscripciones
+      ([[ADR-016 Realtime con Supabase]]).
 - [ ] Revisar índices cuando el volumen de datos crezca.
 
 ## Relaciones

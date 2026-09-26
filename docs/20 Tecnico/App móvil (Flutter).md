@@ -54,6 +54,10 @@ del desktop.
   (`lib/data/blocknote_adapter.dart`); soporta párrafos, encabezados 1–3,
   listas (viñetas/numerada/check), cita, código y separador, con estilos
   inline y links. Tipos no soportados degradan a texto (sin pérdida).
+- Sincronización en vivo ([[ADR-016 Realtime con Supabase]]): `RealtimeBus`
+  (`lib/core/realtime.dart`) con micro-suscripciones ref-counteadas; Inicio,
+  Proyecto, Épicas y Búsqueda refrescan en vivo (silencioso, sin spinner) ante
+  cambios del desktop u otro dispositivo.
 
 ### Entorno y build
 
@@ -86,6 +90,9 @@ del desktop.
   compilaba. `flutter analyze` sin issues y 14 tests en verde.
 - `flutter build apk --release` compila (firma con clave debug; no apto para
   Play Store).
+- Realtime (2026-09-26, [[ADR-016 Realtime con Supabase]]): `RealtimeBus` +
+  suscripciones en Inicio/Proyecto/Épicas/Búsqueda con `flutter analyze` y
+  `flutter test` verdes (14 tests). E2E en dos clientes pendiente.
 
 ## Pendientes
 
@@ -101,5 +108,5 @@ del desktop.
 
 - **MOC:** [[00 Inbox/MOC]]
 - **Relacionada con:** [[Capa de datos Supabase]], [[Modelo de datos objetivo (Supabase)]], [[Gamificacion]], [[Paridad funcional con TodoDex]]
-- **ADR:** [[ADR-015 App movil Flutter (Android)]], [[ADR-008 Estrategia de datos nube-first]], [[ADR-014 Tareas recurrentes]]
+- **ADR:** [[ADR-015 App movil Flutter (Android)]], [[ADR-008 Estrategia de datos nube-first]], [[ADR-014 Tareas recurrentes]], [[ADR-016 Realtime con Supabase]]
 - **Ruta en el monorepo:** `apps/mobile/`

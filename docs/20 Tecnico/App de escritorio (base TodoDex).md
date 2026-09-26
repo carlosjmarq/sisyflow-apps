@@ -46,6 +46,10 @@ SisyFlow el 2026-09-13 ([[ADR-004 Base de escritorio TodoDex a SisyFlow]]).
   por tarea (`diaria`, `días hábiles`, `semanal`, `mensual`), check que registra
   completados con contador del período, historial en el drawer, completado desde
   «Tareas del día» y backup v4 con `todo_completions`.
+- **Realtime** ([[ADR-016 Realtime con Supabase]], 2026-09-26): bus con
+  micro-suscripciones ref-counteadas (`src/realtime/`); Inicio, Épicas,
+  Proyecto, búsqueda y gamificación se actualizan en vivo ante cambios del móvil
+  u otro dispositivo.
 
 ### Arquitectura
 
@@ -102,6 +106,6 @@ vencimiento, épicas por proyecto, tags, backup JSON y editor BlockNote por tare
 
 - **MOC:** [[00 Inbox/MOC]]
 - **Relacionada con:** [[Paridad funcional con TodoDex]], [[Editor de contenido (BlockNote)]], [[Modelo de datos objetivo (Supabase)]]
-- **ADR:** [[ADR-001 Eleccion de stack]], [[ADR-004 Base de escritorio TodoDex a SisyFlow]], [[ADR-008 Estrategia de datos nube-first]]
+- **ADR:** [[ADR-001 Eleccion de stack]], [[ADR-004 Base de escritorio TodoDex a SisyFlow]], [[ADR-008 Estrategia de datos nube-first]], [[ADR-016 Realtime con Supabase]]
 - **Ruta en el monorepo:** `apps/desktop/`
 - **Origen:** `TEst-Opencode` (TodoDex)
