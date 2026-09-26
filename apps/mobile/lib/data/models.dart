@@ -54,7 +54,8 @@ enum TodoRecurrence {
   daily('daily', 'Diaria'),
   weekdays('weekdays', 'Días hábiles'),
   weekly('weekly', 'Semanal'),
-  monthly('monthly', 'Mensual');
+  monthly('monthly', 'Mensual'),
+  custom('custom', 'Personalizada');
 
   const TodoRecurrence(this.dbValue, this.label);
   final String dbValue;
@@ -162,6 +163,7 @@ class Todo {
     this.expirationDate,
     this.completedAt,
     this.recurrence = TodoRecurrence.none,
+    this.recurrenceDays = const [],
   });
 
   final String id;
@@ -177,6 +179,9 @@ class Todo {
   final DateTime? expirationDate;
   final DateTime? completedAt;
   final TodoRecurrence recurrence;
+
+  /// Días ISO (1 = lunes … 7 = domingo) cuando `recurrence == custom` (ADR-017).
+  final List<int> recurrenceDays;
 
   bool get isRecurring => recurrence.isRecurring;
 }
@@ -196,6 +201,7 @@ class DayTodo extends Todo {
     super.expirationDate,
     super.completedAt,
     super.recurrence,
+    super.recurrenceDays,
     required this.projectName,
     required this.projectColor,
     this.epicName,

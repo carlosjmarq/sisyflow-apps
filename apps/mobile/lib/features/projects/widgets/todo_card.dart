@@ -103,7 +103,10 @@ class TodoCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                todo.recurrence.label,
+                                recurrenceSummary(
+                                  todo.recurrence,
+                                  todo.recurrenceDays,
+                                ),
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: theme.colorScheme.tertiary,
                                 ),

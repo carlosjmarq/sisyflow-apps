@@ -5,6 +5,7 @@ import '../../../data/models.dart';
 import '../../../data/recurrence.dart';
 import '../../../editor/content_editor.dart';
 import '../project_view_model.dart';
+import 'recurrence_field.dart';
 
 class TodoSheet extends StatefulWidget {
   const TodoSheet({super.key, required this.todo});
@@ -170,21 +171,11 @@ class _TodoSheetState extends State<TodoSheet> {
                         ),
                         _Field(
                           label: 'Repetición',
-                          child: DropdownButtonFormField<TodoRecurrence>(
-                            initialValue: todo.recurrence,
-                            isExpanded: true,
-                            items: [
-                              for (final recurrence in TodoRecurrence.values)
-                                DropdownMenuItem(
-                                  value: recurrence,
-                                  child: Text(recurrence.label),
-                                ),
-                            ],
-                            onChanged: (value) {
-                              if (value != null) {
-                                vm.changeRecurrence(todo, value);
-                              }
-                            },
+                          child: RecurrenceField(
+                            recurrence: todo.recurrence,
+                            days: todo.recurrenceDays,
+                            onChanged: (recurrence, days) =>
+                                vm.changeRecurrence(todo, recurrence, days),
                           ),
                         ),
                       ],

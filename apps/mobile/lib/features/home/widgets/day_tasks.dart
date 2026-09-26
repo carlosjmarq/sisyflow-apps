@@ -182,7 +182,10 @@ class _DayTaskRow extends StatelessWidget {
                         ),
                         if (todo.isRecurring)
                           Text(
-                            todo.recurrence.label,
+                            recurrenceSummary(
+                              todo.recurrence,
+                              todo.recurrenceDays,
+                            ),
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: theme.colorScheme.tertiary,
                             ),

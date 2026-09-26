@@ -184,7 +184,11 @@ class ProjectViewModel extends ChangeNotifier {
     );
   }
 
-  Future<void> createTodo(String title, TodoRecurrence recurrence) async {
+  Future<void> createTodo(
+    String title,
+    TodoRecurrence recurrence, [
+    List<int> days = const [],
+  ]) async {
     final userId = _auth.currentUser?.id;
     if (userId == null) return;
     final now = DateTime.now();
@@ -199,6 +203,7 @@ class ProjectViewModel extends ChangeNotifier {
       createdAt: now,
       updatedAt: now,
       recurrence: recurrence,
+      recurrenceDays: recurrence == TodoRecurrence.custom ? days : const [],
     );
     todos = [todo, ...todos];
     notifyListeners();
@@ -223,6 +228,7 @@ class ProjectViewModel extends ChangeNotifier {
     String? content,
     String? contentFormat,
     TodoRecurrence? recurrence,
+    List<int>? recurrenceDays,
   }) async {
     final index = todos.indexWhere((todo) => todo.id == id);
     if (index < 0) return;
@@ -249,6 +255,7 @@ class ProjectViewModel extends ChangeNotifier {
           ? (current.completedAt ?? now)
           : null,
       recurrence: recurrence ?? current.recurrence,
+      recurrenceDays: recurrenceDays ?? current.recurrenceDays,
     );
     todos = [...todos]..[index] = updated;
     notifyListeners();
@@ -265,6 +272,11 @@ class ProjectViewModel extends ChangeNotifier {
       'content': ?(content == null ? null : contentJson(content)),
       'content_format': ?contentFormat,
       'recurrence': ?recurrence?.dbValue,
+      if (recurrence != null || recurrenceDays != null)
+        'recurrence_days':
+            (recurrence ?? current.recurrence) == TodoRecurrence.custom
+            ? (recurrenceDays ?? current.recurrenceDays)
+            : null,
     };
 
     try {
@@ -352,13 +364,20 @@ class ProjectViewModel extends ChangeNotifier {
 
   /// Cambia la recurrencia; si la tarea estaba completada, conserva su
   /// `completedAt` como primer completado y vuelve a pendiente (ADR-014).
-  Future<void> changeRecurrence(Todo todo, TodoRecurrence recurrence) async {
-    if (todo.recurrence == recurrence) return;
+  Future<void> changeRecurrence(
+    Todo todo,
+    TodoRecurrence recurrence, [
+    List<int> days = const [],
+  ]) async {
+    final sameDays =
+        (todo.recurrenceDays.toSet().difference(days.toSet()).isEmpty &&
+        days.toSet().difference(todo.recurrenceDays.toSet()).isEmpty);
+    if (todo.recurrence == recurrence && sameDays) return;
     final userId = _auth.currentUser?.id;
     final wasDone = todo.status == TodoStatus.done;
     final oldCompletedAt = todo.completedAt;
 
-    await updateTodo(todo.id, recurrence: recurrence);
+    await updateTodo(todo.id, recurrence: recurrence, recurrenceDays: days);
 
     if (recurrence.isRecurring &&
         wasDone &&

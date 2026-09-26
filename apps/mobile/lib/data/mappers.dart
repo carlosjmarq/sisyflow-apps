@@ -14,6 +14,11 @@ DateTime _requiredDate(Object? value, DateTime fallback) =>
 String _string(Object? value, [String fallback = '']) =>
     value == null ? fallback : value.toString();
 
+List<int> _intList(Object? value) {
+  if (value is! List) return const [];
+  return value.whereType<num>().map((item) => item.toInt()).toList();
+}
+
 EpicRef? _epicRef(Object? value) {
   if (value is! Map) return null;
   return EpicRef(
@@ -62,6 +67,7 @@ Todo todoFromRow(Map<String, dynamic> row) => Todo(
   expirationDate: _date(row['expiration_date']),
   completedAt: _date(row['completed_at']),
   recurrence: TodoRecurrence.fromDb(row['recurrence'] as String?),
+  recurrenceDays: _intList(row['recurrence_days']),
 );
 
 DayTodo dayTodoFromRow(Map<String, dynamic> row) {
@@ -84,6 +90,7 @@ DayTodo dayTodoFromRow(Map<String, dynamic> row) {
     expirationDate: todo.expirationDate,
     completedAt: todo.completedAt,
     recurrence: todo.recurrence,
+    recurrenceDays: todo.recurrenceDays,
     projectName: _string(projectMap['name'], 'Proyecto'),
     projectColor: _string(projectMap['color_code'], defaultHex),
     epicName: epicMap.isEmpty ? null : _string(epicMap['name']),
@@ -112,6 +119,9 @@ Map<String, dynamic> todoInsert(Todo todo, String userId) => {
   'priority': todo.priority.dbValue,
   'urgency': todo.urgency.dbValue,
   'recurrence': todo.recurrence.dbValue,
+  'recurrence_days': todo.recurrence == TodoRecurrence.custom
+      ? todo.recurrenceDays
+      : null,
   'expiration_date': todo.expirationDate?.toIso8601String(),
   'content': contentJson(todo.content),
   'content_format': todo.contentFormat,

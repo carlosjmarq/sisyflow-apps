@@ -86,7 +86,11 @@ class HomeViewModel extends ChangeNotifier {
       ]);
       projects = results[0] as List<Project>;
       epics = results[1] as List<Epic>;
-      dayTodos = results[2] as List<DayTodo>;
+      dayTodos = (results[2] as List<DayTodo>)
+          .where(
+            (todo) => recurrenceDueOn(todo.recurrence, todo.recurrenceDays),
+          )
+          .toList();
       gamification = results[3] as GamificationData;
       await _loadCompletions();
     } catch (error) {

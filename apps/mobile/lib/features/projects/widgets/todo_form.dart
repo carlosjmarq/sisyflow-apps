@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models.dart';
+import 'recurrence_field.dart';
 
 class TodoForm extends StatefulWidget {
   const TodoForm({super.key, required this.onCreate});
 
-  final void Function(String title, TodoRecurrence recurrence) onCreate;
+  final void Function(String title, TodoRecurrence recurrence, List<int> days)
+  onCreate;
 
   @override
   State<TodoForm> createState() => _TodoFormState();
@@ -14,6 +16,7 @@ class TodoForm extends StatefulWidget {
 class _TodoFormState extends State<TodoForm> {
   final _controller = TextEditingController();
   TodoRecurrence _recurrence = TodoRecurrence.none;
+  List<int> _recurrenceDays = const [];
 
   @override
   void dispose() {
@@ -24,7 +27,7 @@ class _TodoFormState extends State<TodoForm> {
   void _submit() {
     final title = _controller.text.trim();
     if (title.isEmpty) return;
-    widget.onCreate(title, _recurrence);
+    widget.onCreate(title, _recurrence, _recurrenceDays);
     Navigator.of(context).pop();
   }
 
@@ -46,21 +49,13 @@ class _TodoFormState extends State<TodoForm> {
             onSubmitted: (_) => _submit(),
           ),
           const SizedBox(height: 16),
-          DropdownButtonFormField<TodoRecurrence>(
-            initialValue: _recurrence,
-            decoration: const InputDecoration(
-              labelText: 'Repetición',
-              border: OutlineInputBorder(),
-            ),
-            items: [
-              for (final recurrence in TodoRecurrence.values)
-                DropdownMenuItem(
-                  value: recurrence,
-                  child: Text(recurrence.label),
-                ),
-            ],
-            onChanged: (value) =>
-                setState(() => _recurrence = value ?? TodoRecurrence.none),
+          RecurrenceField(
+            recurrence: _recurrence,
+            days: _recurrenceDays,
+            onChanged: (recurrence, days) => setState(() {
+              _recurrence = recurrence;
+              _recurrenceDays = days;
+            }),
           ),
         ],
       ),
