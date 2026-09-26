@@ -19,6 +19,9 @@ importers:
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
+      marked:
+        specifier: ^18.0.5
+        version: 18.0.13
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1

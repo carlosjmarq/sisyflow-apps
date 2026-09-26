@@ -92,8 +92,10 @@ export function registerTodo(program: Command): void {
       const priority = parsePriority(options.priority!)
       const urgency = parseUrgency(options.urgency!)
       const recurrence = parseRecurrence(options.recurrence!)
-      const contentFormat = options.content ? parseContentFormat(options.contentFormat!) : undefined
-      const content = options.content ? toContentJson(options.content) : undefined
+      const content =
+        options.content !== undefined
+          ? toContentJson(options.content, parseContentFormat(options.contentFormat!))
+          : undefined
       const expirationDate = options.due ? parseDate(options.due) : null
       const id = crypto.randomUUID()
       const { error } = await client.from('todos').insert({
@@ -106,7 +108,7 @@ export function registerTodo(program: Command): void {
         urgency,
         recurrence,
         expiration_date: expirationDate,
-        ...(content !== undefined ? { content, content_format: contentFormat } : {}),
+        ...(content !== undefined ? { content, content_format: 'blocknote' } : {}),
       })
       if (error) fail(`No se pudo crear la tarea: ${error.message}`)
       const row: TodoRow = {
@@ -188,8 +190,9 @@ export function registerTodo(program: Command): void {
       if (options.recurrence !== undefined) updates.recurrence = parseRecurrence(options.recurrence)
       if (options.due !== undefined) updates.expiration_date = options.due ? parseDate(options.due) : null
       if (options.content !== undefined) {
-        updates.content = toContentJson(options.content)
-        updates.content_format = options.contentFormat ? parseContentFormat(options.contentFormat) : 'blocknote'
+        const format = options.contentFormat ? parseContentFormat(options.contentFormat) : 'blocknote'
+        updates.content = toContentJson(options.content, format)
+        updates.content_format = 'blocknote'
       }
       if (Object.keys(updates).length === 0) {
         fail('Proporciona al menos un campo a actualizar', 2)

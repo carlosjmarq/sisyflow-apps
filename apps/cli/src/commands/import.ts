@@ -121,7 +121,10 @@ export function registerImport(program: Command): void {
           urgency: todo.urgency ?? 'medium',
           expiration_date: todo.due ? parseDate(todo.due) : null,
           ...(todo.content !== undefined
-            ? { content: toContentJson(todo.content), content_format: todo.content_format ?? 'blocknote' }
+            ? {
+                content: toContentJson(todo.content, todo.content_format ?? 'blocknote'),
+                content_format: 'blocknote',
+              }
             : {}),
         })
         if (error) fail(`No se pudo crear la tarea "${todo.title}": ${error.message}`)

@@ -116,8 +116,35 @@ Windows para evitar el redirect UTF-16 de PowerShell 5.1).
 - `epic delete` falla si la épica tiene proyectos (FK `on delete restrict`,
   [[ADR-010 Ciclo de vida de proyectos y vista del dia]]).
 - `project delete` borra sus tareas en cascada (se advierte y exige `--yes`).
-- El contenido de una tarea se guarda como bloque blocknote (párrafo) o como
-  `markdown` según `--content-format`.
+- El contenido de una tarea se **normaliza a bloques BlockNote** y se guarda con
+  `content_format = 'blocknote'` (formato canónico que consumen el desktop y el
+  móvil). `--content-format` describe el formato de **entrada**: `markdown` se
+  parsea con `marked` (encabezados, listas, citas, código, énfasis y links);
+  `blocknote` acepta JSON de bloques tal cual o, si es texto, un párrafo por
+  línea.
+
+## Historial
+
+### Corrección de contenido (2026-09-26)
+
+Bug: `todo create`/`todo update`/`import` guardaban el contenido como JSON de
+bloques BlockNote pero etiquetaban `content_format = 'markdown'` cuando se pedía
+ese formato. El desktop, al leer una fila `markdown`, interpretaba el JSON como
+markdown y mostraba el blob crudo (el array JSON literal) en el editor.
+
+Corrección: `apps/cli/src/lib/content.ts` ahora convierte markdown → bloques
+BlockNote con `marked` (`markdownToBlocks`), el texto plano a un párrafo por
+línea (`plainTextToBlocks`) y acepta JSON de bloques como passthrough; todas las
+altas/ediciones guardan `content_format = 'blocknote'`. Requiere la dependencia
+`marked` (misma que el desktop).
+
+Migración de datos: el 2026-09-26 se detectaron **27 de 106** tareas con
+`content_format = 'markdown'` (contenido roto). Se repararon con un script de una
+vez que extrajo el markdown de cada fila (estaba en `content[0].content[0].text`),
+lo reconvirtió con `markdownToBlocks` y reguardó `content_format = 'blocknote'`;
+quedaron 0 filas con `markdown`. Backup del contenido previo en
+`%TEMP%\opencode\todos_markdown_backup_<fecha>.json`. Para tareas futuras, usar
+`todo update <id> --content "<markdown>" --content-format markdown`.
 
 ## Pendientes
 
