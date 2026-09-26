@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { useDayTodos, type DayTodo } from '../hooks/useDayTodos'
 import type { TodoCompletionState } from '../hooks/useTodoCompletions'
-import { isRecurring, recurrencePeriodLabel } from '../lib/recurrence'
-import { PRIORITY_COLORS, PRIORITY_LABELS, RECURRENCE_LABELS, STATUS_LABELS } from '../types'
+import { isRecurring, recurrencePeriodLabel, recurrenceSummary } from '../lib/recurrence'
+import { PRIORITY_COLORS, PRIORITY_LABELS, STATUS_LABELS } from '../types'
 import { Card, Icon, IconButton, Skeleton } from './ui'
 
 export function DayView({ onActivity }: { onActivity?: () => void }) {
@@ -146,7 +146,7 @@ function DayTaskRow({
           {recurring && (
             <span className="flex items-center gap-1 rounded-full bg-tertiary-container px-2 py-0.5 text-label-small text-on-tertiary-container">
               <Icon name="repeat" size={14} />
-              {RECURRENCE_LABELS[todo.recurrence]}
+              {recurrenceSummary(todo.recurrence, todo.recurrenceDays)}
             </span>
           )}
           {recurring && count > 0 && (

@@ -28,7 +28,7 @@ export interface Project {
 export type TodoStatus = 'backlog' | 'todo' | 'in-progress' | 'done' | 'cancelled'
 export type Priority = 'low' | 'medium' | 'high' | 'critical'
 export type Urgency = 'low' | 'medium' | 'high' | 'critical'
-export type TodoRecurrence = 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly'
+export type TodoRecurrence = 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly' | 'custom'
 
 export const RECURRENCE_LABELS: Record<TodoRecurrence, string> = {
   none: 'Nunca',
@@ -36,7 +36,25 @@ export const RECURRENCE_LABELS: Record<TodoRecurrence, string> = {
   weekdays: 'Días hábiles',
   weekly: 'Semanal',
   monthly: 'Mensual',
+  custom: 'Personalizada',
 }
+
+export interface WeekdayOption {
+  value: number
+  short: string
+  label: string
+}
+
+/** Días ISO: 1 = lunes … 7 = domingo (ADR-017). */
+export const WEEKDAYS: WeekdayOption[] = [
+  { value: 1, short: 'L', label: 'Lunes' },
+  { value: 2, short: 'M', label: 'Martes' },
+  { value: 3, short: 'X', label: 'Miércoles' },
+  { value: 4, short: 'J', label: 'Jueves' },
+  { value: 5, short: 'V', label: 'Viernes' },
+  { value: 6, short: 'S', label: 'Sábado' },
+  { value: 7, short: 'D', label: 'Domingo' },
+]
 
 export const STATUS_LABELS: Record<TodoStatus, string> = {
   backlog: 'Backlog',
@@ -109,6 +127,8 @@ export interface Todo {
   expirationDate: Date | null
   completedAt?: Date | null
   recurrence: TodoRecurrence
+  /** Días ISO (1..7) cuando `recurrence === 'custom'` (ADR-017). */
+  recurrenceDays?: number[]
 }
 
 export interface TodoCompletion {

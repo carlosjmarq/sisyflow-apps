@@ -171,6 +171,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["task_priority"]
           project_id: string
           recurrence: Database["public"]["Enums"]["todo_recurrence"]
+          recurrence_days: number[] | null
           status: Database["public"]["Enums"]["todo_status"]
           title: string
           updated_at: string
@@ -187,6 +188,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id: string
           recurrence?: Database["public"]["Enums"]["todo_recurrence"]
+          recurrence_days?: number[] | null
           status?: Database["public"]["Enums"]["todo_status"]
           title: string
           updated_at?: string
@@ -203,6 +205,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id?: string
           recurrence?: Database["public"]["Enums"]["todo_recurrence"]
+          recurrence_days?: number[] | null
           status?: Database["public"]["Enums"]["todo_status"]
           title?: string
           updated_at?: string
@@ -258,7 +261,13 @@ export type Database = {
     Enums: {
       project_status: "active" | "paused" | "completed"
       task_priority: "low" | "medium" | "high" | "critical"
-      todo_recurrence: "none" | "daily" | "weekdays" | "weekly" | "monthly"
+      todo_recurrence:
+        | "none"
+        | "daily"
+        | "weekdays"
+        | "weekly"
+        | "monthly"
+        | "custom"
       todo_status: "backlog" | "todo" | "in-progress" | "done" | "cancelled"
     }
     CompositeTypes: {
@@ -392,7 +401,14 @@ export const Constants = {
     Enums: {
       project_status: ["active", "paused", "completed"],
       task_priority: ["low", "medium", "high", "critical"],
-      todo_recurrence: ["none", "daily", "weekdays", "weekly", "monthly"],
+      todo_recurrence: [
+        "none",
+        "daily",
+        "weekdays",
+        "weekly",
+        "monthly",
+        "custom",
+      ],
       todo_status: ["backlog", "todo", "in-progress", "done", "cancelled"],
     },
   },

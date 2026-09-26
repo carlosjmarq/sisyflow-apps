@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthContext'
 import { useToast } from '../components/ui/ToastContext'
 import { mapTodo, type TodoRow } from '../data/mappers'
+import { recurrenceDueOn } from '../lib/recurrence'
 import { useRealtimeRefresh } from '../realtime/useRealtimeRefresh'
 import { useTodoCompletions } from './useTodoCompletions'
 import type { Todo } from '../types'
@@ -64,12 +65,14 @@ export function useDayTodos() {
       return
     }
 
-    const mapped = ((data ?? []) as unknown as DayTodoRow[]).map((row) => ({
-      ...mapTodo(row),
-      projectName: row.projects?.name ?? 'Proyecto',
-      projectColor: row.projects?.color_code ?? '#C7F9CC',
-      epicName: row.projects?.epics?.name,
-    }))
+    const mapped = ((data ?? []) as unknown as DayTodoRow[])
+      .map((row) => ({
+        ...mapTodo(row),
+        projectName: row.projects?.name ?? 'Proyecto',
+        projectColor: row.projects?.color_code ?? '#C7F9CC',
+        epicName: row.projects?.epics?.name,
+      }))
+      .filter((todo) => recurrenceDueOn(todo.recurrence, todo.recurrenceDays))
     setTodos(sortDayTodos(mapped))
     setLoading(false)
   }, [user, showToast])

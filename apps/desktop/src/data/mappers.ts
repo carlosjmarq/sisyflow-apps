@@ -90,6 +90,7 @@ export function mapTodo(row: TodoRow): Todo {
     expirationDate: row.expiration_date ? new Date(row.expiration_date) : null,
     completedAt: row.completed_at ? new Date(row.completed_at) : null,
     recurrence: row.recurrence as TodoRecurrence,
+    recurrenceDays: row.recurrence_days ?? undefined,
   }
 }
 
@@ -137,6 +138,7 @@ export function todoInsertFromDomain(todo: Todo, userId: string): TodoInsert {
     created_at: toIso(todo.createdAt),
     updated_at: todo.updatedAt ? toIso(todo.updatedAt) : new Date().toISOString(),
     recurrence: todo.recurrence,
+    recurrence_days: todo.recurrence === 'custom' ? (todo.recurrenceDays ?? null) : null,
   }
 }
 
@@ -163,6 +165,10 @@ export function todoUpdateFromDomain(updates: Partial<Todo>): TodoUpdate {
   if (updates.content !== undefined) row.content = parseContent(updates.content)
   if (updates.contentFormat !== undefined) row.content_format = updates.contentFormat
   if (updates.recurrence !== undefined) row.recurrence = updates.recurrence
+  if (updates.recurrence !== undefined || updates.recurrenceDays !== undefined) {
+    const isCustom = (updates.recurrence ?? 'custom') === 'custom'
+    row.recurrence_days = isCustom ? (updates.recurrenceDays ?? null) : null
+  }
   if (updates.status !== undefined) {
     row.status = updates.status
     row.completed_at = updates.status === 'done' ? toIso(updates.completedAt ?? new Date()) : null

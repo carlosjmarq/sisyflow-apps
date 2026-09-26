@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Card, ConfirmDialog, Icon, IconButton, TruncatedTooltip } from './ui'
-import { isRecurring } from '../lib/recurrence'
+import { isRecurring, recurrenceSummary } from '../lib/recurrence'
 import {
   PRIORITY_COLORS,
   PRIORITY_LABELS,
-  RECURRENCE_LABELS,
   STATUS_LABELS,
   URGENCY_LABELS,
   type Todo,
@@ -115,7 +114,7 @@ export function TodoItem({
             {recurring && (
               <span className="flex items-center gap-1 rounded-full bg-tertiary-container px-2 py-0.5 text-label-small text-on-tertiary-container">
                 <Icon name="repeat" size={14} />
-                {RECURRENCE_LABELS[todo.recurrence]}
+                {recurrenceSummary(todo.recurrence, todo.recurrenceDays)}
               </span>
             )}
             {recurring && completionCount > 0 && (

@@ -157,6 +157,7 @@ export interface NewTodoInput {
   createdAt: Date
   expirationDate: Date | null
   recurrence: TodoRecurrence
+  recurrenceDays: number[]
 }
 
 export function useProjectTodos(projectId: string | undefined, sortBy: TodoSortKey = 'createdAt') {
@@ -216,6 +217,7 @@ export function useProjectTodos(projectId: string | undefined, sortBy: TodoSortK
       expirationDate: input.expirationDate,
       completedAt: input.status === 'done' ? now : null,
       recurrence: input.recurrence,
+      recurrenceDays: input.recurrence === 'custom' ? input.recurrenceDays : undefined,
     }
     setTodos((prev) => sortTodos([todo, ...prev], sortBy))
 
@@ -256,13 +258,17 @@ export function useProjectTodos(projectId: string | undefined, sortBy: TodoSortK
    * completada, su `completedAt` se conserva como primer completado del
    * historial y la tarea vuelve a pendiente (ADR-014).
    */
-  const changeRecurrence = useCallback(async (id: string, recurrence: TodoRecurrence) => {
+  const changeRecurrence = useCallback(async (id: string, recurrence: TodoRecurrence, recurrenceDays: number[] = []) => {
     const todo = todos.find((item) => item.id === id)
-    if (!todo || todo.recurrence === recurrence) return
+    if (!todo) return
+    const sameDays =
+      JSON.stringify([...(todo.recurrenceDays ?? [])].sort()) ===
+      JSON.stringify([...recurrenceDays].sort())
+    if (todo.recurrence === recurrence && sameDays) return
 
     const previousCompletedAt = todo.completedAt ?? null
     const wasDone = todo.status === 'done'
-    const updated = await updateTodo(id, { recurrence })
+    const updated = await updateTodo(id, { recurrence, recurrenceDays })
     if (!updated) return
 
     if (recurrence !== 'none' && wasDone && previousCompletedAt) {

@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import type { Todo, TodoStatus, TodoRecurrence, Priority, Urgency, Tag } from '../types'
-import { STATUS_LABELS, PRIORITY_LABELS, URGENCY_LABELS, RECURRENCE_LABELS, paletteHex } from '../types'
+import { STATUS_LABELS, PRIORITY_LABELS, URGENCY_LABELS, paletteHex } from '../types'
 import { isRecurring, recurrencePeriodLabel } from '../lib/recurrence'
 import type { TodoCompletionState } from '../hooks/useTodoCompletions'
 import { BlockEditor } from './BlockEditor'
+import { RecurrenceField } from './RecurrenceField'
 import {
   Button,
   ConfirmDialog,
@@ -24,7 +25,7 @@ interface TodoDrawerProps {
   onUpdate: (todoId: string, updates: Partial<Todo>) => void
   onDelete: () => void
   completionState?: TodoCompletionState
-  onRecurrenceChange: (recurrence: TodoRecurrence) => void
+  onRecurrenceChange: (recurrence: TodoRecurrence, days: number[]) => void
   onRemoveCompletion: (completionId: string) => void
 }
 
@@ -37,7 +38,6 @@ const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ 
 const RECURRING_STATUS_OPTIONS = STATUS_OPTIONS.filter((option) => option.value !== 'done')
 const PRIORITY_OPTIONS = Object.entries(PRIORITY_LABELS).map(([value, label]) => ({ value, label }))
 const URGENCY_OPTIONS = Object.entries(URGENCY_LABELS).map(([value, label]) => ({ value, label }))
-const RECURRENCE_OPTIONS = Object.entries(RECURRENCE_LABELS).map(([value, label]) => ({ value, label }))
 
 export function TodoDrawer({
   open,
@@ -276,12 +276,11 @@ export function TodoDrawer({
                   value={todo.urgency}
                   onChange={(value) => onUpdate(todo.id, { urgency: value as Urgency })}
                 />
-                <Select
-                  label="Repetición"
+                <RecurrenceField
+                  recurrence={todo.recurrence}
+                  days={todo.recurrenceDays ?? []}
                   labelBgClass="bg-surface-container-low"
-                  options={RECURRENCE_OPTIONS}
-                  value={todo.recurrence}
-                  onChange={(value) => onRecurrenceChange(value as TodoRecurrence)}
+                  onChange={onRecurrenceChange}
                 />
                 <Field label="Épica">
                   {projectEpic ? (

@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Select, TextField } from './ui'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from './ui'
 import type { NewTodoInput } from '../hooks/useProjects'
-import { RECURRENCE_LABELS, type TodoRecurrence } from '../types'
-
-const RECURRENCE_OPTIONS = Object.entries(RECURRENCE_LABELS).map(([value, label]) => ({ value, label }))
+import type { TodoRecurrence } from '../types'
+import { RecurrenceField } from './RecurrenceField'
 
 export function TodoForm({
   open,
@@ -16,6 +15,7 @@ export function TodoForm({
 }) {
   const [title, setTitle] = useState('')
   const [recurrence, setRecurrence] = useState<TodoRecurrence>('none')
+  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([])
 
   const handleCreate = () => {
     if (!title.trim()) return
@@ -29,9 +29,11 @@ export function TodoForm({
       createdAt: new Date(),
       expirationDate: null,
       recurrence,
+      recurrenceDays,
     })
     setTitle('')
     setRecurrence('none')
+    setRecurrenceDays([])
     onOpenChange(false)
   }
 
@@ -48,12 +50,14 @@ export function TodoForm({
             autoFocus
             onKeyDown={(event) => event.key === 'Enter' && handleCreate()}
           />
-          <Select
-            label="Repetición"
+          <RecurrenceField
+            recurrence={recurrence}
+            days={recurrenceDays}
             labelBgClass="bg-surface-container-high"
-            options={RECURRENCE_OPTIONS}
-            value={recurrence}
-            onChange={(value) => setRecurrence(value as TodoRecurrence)}
+            onChange={(next, days) => {
+              setRecurrence(next)
+              setRecurrenceDays(days)
+            }}
           />
           <DialogActions>
             <Button variant="text" onClick={() => onOpenChange(false)}>

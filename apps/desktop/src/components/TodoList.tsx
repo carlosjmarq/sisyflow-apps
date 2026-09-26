@@ -113,14 +113,19 @@ export function TodoList() {
     }
   }
 
-  const handleRecurrenceChange = async (id: string, recurrence: TodoRecurrence) => {
-    await changeRecurrence(id, recurrence)
+  const handleRecurrenceChange = async (
+    id: string,
+    recurrence: TodoRecurrence,
+    recurrenceDays: number[],
+  ) => {
+    await changeRecurrence(id, recurrence, recurrenceDays)
     if (selectedTodo?.id === id) {
       setSelectedTodo((prev) =>
         prev
           ? {
               ...prev,
               recurrence,
+              recurrenceDays,
               ...(prev.status === 'done' && recurrence !== 'none'
                 ? { status: 'todo' as TodoStatus, completedAt: null }
                 : {}),
@@ -308,8 +313,8 @@ export function TodoList() {
           }
         }}
         completionState={selectedTodo ? completionsForTodo(selectedTodo.id) : undefined}
-        onRecurrenceChange={(recurrence) => {
-          if (selectedTodo) void handleRecurrenceChange(selectedTodo.id, recurrence)
+        onRecurrenceChange={(recurrence, days) => {
+          if (selectedTodo) void handleRecurrenceChange(selectedTodo.id, recurrence, days)
         }}
         onRemoveCompletion={(completionId) => void removeCompletion(completionId)}
       />
